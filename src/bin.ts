@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 import { BunContext, BunRuntime } from "@effect/platform-bun"
 import { Effect } from "effect"

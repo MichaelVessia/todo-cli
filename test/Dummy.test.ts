@@ -1,7 +1,7 @@
-import { describe, expect, it } from "@effect/vitest"
+import { describe, expect, test } from "bun:test"
 
 describe("Dummy", () => {
-  it("should pass", () => {
+  test("should pass", () => {
     expect(true).toBe(true)
   })
 })
