@@ -37,6 +37,7 @@
     "@types/node": "^22.5.2",
     "@typescript-eslint/eslint-plugin": "^8.4.0",
     "@typescript-eslint/parser": "^8.4.0",
+    "bun-types": "^1.2.18",
     "effect": "latest",
     "eslint": "^9.10.0",
     "eslint-import-resolver-typescript": "^3.6.3",
@@ -50,5 +51,8 @@
     "patchedDependencies": {
       "@changesets/get-github-info@0.6.0": "patches/@changesets__get-github-info@0.6.0.patch"
     }
+  },
+  "dependencies": {
+    "@effect/schema": "^0.75.5"
   }
 }
