@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 
-import * as NodeContext from "@effect/platform-node/NodeContext"
-import * as NodeRuntime from "@effect/platform-node/NodeRuntime"
-import * as Effect from "effect/Effect"
+import { BunContext, BunRuntime } from "@effect/platform-bun"
+import { Effect } from "effect"
 import { run } from "./Cli.js"
 
 run(process.argv).pipe(
-  Effect.provide(NodeContext.layer),
-  NodeRuntime.runMain({ disableErrorReporting: true })
+  Effect.provide(BunContext.layer),
+  BunRuntime.runMain({ disableErrorReporting: true })
 )
