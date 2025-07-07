@@ -1,5 +1,5 @@
 import { Data } from "effect"
-import { TodoId } from "./TodoId.js"
+import type { TodoId } from "./TodoId.js"
 
 export class TodoNotFoundError extends Data.TaggedError("TodoNotFoundError")<{
   readonly id: TodoId

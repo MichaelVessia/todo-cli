@@ -92,23 +92,18 @@ export const updateDueDate = (dueDate: Date) => (todo: Todo): Todo =>
     updatedAt: new Date()
   })
 
-export const isCompleted = (todo: Todo): boolean =>
-  todo.status === "completed"
+export const isCompleted = (todo: Todo): boolean => todo.status === "completed"
 
-export const isPending = (todo: Todo): boolean =>
-  todo.status === "pending"
+export const isPending = (todo: Todo): boolean => todo.status === "pending"
 
-export const isInProgress = (todo: Todo): boolean =>
-  todo.status === "in_progress"
+export const isInProgress = (todo: Todo): boolean => todo.status === "in_progress"
 
 export const isOverdue = (todo: Todo): boolean =>
   todo.dueDate !== undefined && todo.dueDate < new Date() && !isCompleted(todo)
 
-export const isHighPriority = (todo: Todo): boolean =>
-  todo.priority === "high"
+export const isHighPriority = (todo: Todo): boolean => todo.priority === "high"
 
-export const equals = (a: Todo) => (b: Todo): boolean =>
-  TodoId.equals(a.id)(b.id)
+export const equals = (a: Todo) => (b: Todo): boolean => TodoId.equals(a.id)(b.id)
 
 export const toJSON = (todo: Todo) => ({
   id: TodoId.toString(todo.id),
