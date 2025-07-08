@@ -4,6 +4,7 @@ import * as Options from "@effect/cli/Options"
 import { Console, Effect } from "effect"
 import { addTodo, type AddTodoCommand } from "./application/commands/AddTodo.js"
 import { TodoRepositoryLayer } from "./infra/layers/TodoRepositoryLayer.js"
+import { getTodos } from "./application/commands/ListTodos.js"
 
 const addCommand = Command.make("add", {
   args: Args.text({ name: "title" }),
@@ -31,7 +32,16 @@ const addCommand = Command.make("add", {
   )
 )
 
-const listCommand = Command.make("list", {}, () => Console.log("Listing todos..."))
+const listCommand = Command.make("list", {}, () => Effect.gen(function* () {
+  const result = yield* getTodos()
+  yield* Effect.forEach(result, (res) => Console.log(`${res.title}, ${res.status}`))
+}).pipe(
+  Effect.provide(TodoRepositoryLayer),
+  Effect.catchAll((error) =>
+    Console.log(`Error: ${error.message}`)
+  )
+)
+)
 
 const updateCommand = Command.make("update", {}, () => Console.log("updating todo..."))
 
