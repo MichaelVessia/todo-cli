@@ -4,6 +4,7 @@ import { addTodo, type AddTodoCommand } from "../application/commands/AddTodo.js
 import { getTodos } from "../application/commands/ListTodos.js"
 import { updateTodo, UpdateTodoCommand } from "../application/commands/UpdateTodo.js"
 import { PRIORITY_CHOICES } from "../domain/todo/PriorityConstants.js"
+import { removeTodo } from "../application/commands/RemoveTodo.js"
 
 export const promptForAddTodo = () => Effect.gen(function* () {
   const title = yield* Prompt.text({
@@ -116,4 +117,37 @@ export const promptForUpdateTodo = () => Effect.gen(function* () {
   })
 
   yield* Console.log(`Todo updated successfully: ${updatedTodo.title}`)
+})
+
+export const promptForRemoveTodo = () => Effect.gen(function* () {
+  const todos = yield* getTodos()
+
+  if (todos.length === 0) {
+    yield* Console.log("No todos found!")
+    return
+  }
+
+  const todoChoices = todos.map((todo) => ({
+    title: `${todo.title} (${todo.status}) - ${todo.priority}`,
+    value: todo.id
+  }))
+
+  const selectedTodoId = yield* Prompt.select({
+    message: "Select a todo to remove:",
+    choices: todoChoices
+  })
+
+  const selectedTodo = todos.find(todo => todo.id === selectedTodoId)
+  if (!selectedTodo) {
+    yield* Console.log("Todo not found!")
+    return
+  }
+
+  yield* Console.log(`\nRemoving: ${selectedTodo.title}`)
+
+  yield* removeTodo({
+    id: selectedTodoId,
+  })
+
+  yield* Console.log(`Todo removed successfully.`)
 })

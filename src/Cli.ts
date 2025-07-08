@@ -3,7 +3,7 @@ import * as Prompt from "@effect/cli/Prompt"
 import { Console, Effect } from "effect"
 import { TodoRepositoryLayer } from "./infra/layers/TodoRepositoryLayer.js"
 import { addCommand, listCommand, updateCommand, removeCommand, completeCommand } from "./cli/commands.js"
-import { promptForAddTodo, promptForListTodos, promptForUpdateTodo } from "./cli/prompts.js"
+import { promptForAddTodo, promptForListTodos, promptForRemoveTodo, promptForUpdateTodo } from "./cli/prompts.js"
 
 const interactiveCommand = Command.make("todo", {}, () =>
   Effect.gen(function* () {
@@ -32,7 +32,7 @@ const interactiveCommand = Command.make("todo", {}, () =>
         break
 
       case "remove":
-        yield* Console.log("removing todo...")
+        yield* promptForRemoveTodo()
         break
 
       case "complete":
