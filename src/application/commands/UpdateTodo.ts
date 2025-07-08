@@ -2,17 +2,13 @@ import { Effect } from "effect";
 import { TodoValidationError } from "../../domain/todo/TodoErrors.js";
 import { TodoId } from "../../domain/todo/TodoId.js";
 import { TodoRepository } from "../../domain/todo/TodoRepository.js";
+import { Todo } from "../../domain/todo/Todo.js";
+import { Mutable } from "../../shared/types.js";
 
 export interface UpdateTodoCommand {
   readonly id: TodoId;
-  readonly changes: {
-    readonly title?: string
-    readonly description?: string
-    readonly priority?: "low" | "medium" | "high"
-    readonly dueDate?: Date
-  }
+  readonly changes: Partial<Mutable<Pick<Todo, 'title' | 'description' | 'priority' | 'dueDate'>>>
 }
-
 
 export const updateTodo = (
   command: UpdateTodoCommand

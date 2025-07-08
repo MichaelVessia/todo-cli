@@ -6,7 +6,7 @@ import { Console, Effect } from "effect"
 import { addTodo, type AddTodoCommand } from "./application/commands/AddTodo.js"
 import { TodoRepositoryLayer } from "./infra/layers/TodoRepositoryLayer.js"
 import { getTodos } from "./application/commands/ListTodos.js"
-import { updateTodo } from "./application/commands/UpdateTodo.js"
+import { updateTodo, UpdateTodoCommand } from "./application/commands/UpdateTodo.js"
 
 const addCommand = Command.make("add", {
   args: Args.text({ name: "title" }),
@@ -155,12 +155,12 @@ const interactiveCommand = Command.make("todo", {}, () =>
         const title = yield* Prompt.text({
           message: "Enter todo title:"
         })
-        
+
         const description = yield* Prompt.text({
           message: "Enter description (optional):",
           default: ""
         })
-        
+
         const priority = yield* Prompt.select({
           message: "Select priority:",
           choices: [
@@ -169,7 +169,7 @@ const interactiveCommand = Command.make("todo", {}, () =>
             { title: "High", value: "high" }
           ]
         })
-        
+
         const dueDate = yield* Prompt.text({
           message: "Enter due date (YYYY-MM-DD, optional):",
           default: new Date().toISOString().split('T')[0]
@@ -227,7 +227,7 @@ const interactiveCommand = Command.make("todo", {}, () =>
           ]
         })
 
-        let changes: any = {}
+        let changes: UpdateTodoCommand['changes'] = {}
 
         switch (updateField) {
           case "title":
@@ -248,9 +248,9 @@ const interactiveCommand = Command.make("todo", {}, () =>
             const newPriority = yield* Prompt.select({
               message: "Select priority:",
               choices: [
-                { title: "Low", value: "low" },
-                { title: "Medium", value: "medium" },
-                { title: "High", value: "high" }
+                { title: "Low", value: "low" as const },
+                { title: "Medium", value: "medium" as const },
+                { title: "High", value: "high" as const }
               ]
             })
             changes.priority = newPriority
