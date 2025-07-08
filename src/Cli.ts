@@ -7,12 +7,13 @@ import { addTodo, type AddTodoCommand } from "./application/commands/AddTodo.js"
 import { TodoRepositoryLayer } from "./infra/layers/TodoRepositoryLayer.js"
 import { getTodos } from "./application/commands/ListTodos.js"
 import { updateTodo, UpdateTodoCommand } from "./application/commands/UpdateTodo.js"
+import { PRIORITY_ARRAY, PRIORITY_CHOICES, DEFAULT_PRIORITY } from "./domain/todo/PriorityConstants.js"
 
 const addCommand = Command.make("add", {
   args: Args.text({ name: "title" }),
   options: {
     description: Options.text("description").pipe(Options.withDefault("")),
-    priority: Options.choice("priority", ["low", "medium", "high"]).pipe(Options.withDefault("medium" as const)),
+    priority: Options.choice("priority", PRIORITY_ARRAY).pipe(Options.withDefault(DEFAULT_PRIORITY)),
     dueDate: Options.text("due-date").pipe(Options.withDefault(new Date().toISOString()))
   }
 }, ({ args: title, options: { description, priority, dueDate } }) =>
@@ -102,11 +103,7 @@ const updateCommand = Command.make("update", {}, () =>
       case "priority":
         const newPriority = yield* Prompt.select({
           message: "Select priority:",
-          choices: [
-            { title: "Low", value: "low" },
-            { title: "Medium", value: "medium" },
-            { title: "High", value: "high" }
-          ]
+          choices: PRIORITY_CHOICES
         })
         changes.priority = newPriority
         break
@@ -163,11 +160,7 @@ const interactiveCommand = Command.make("todo", {}, () =>
 
         const priority = yield* Prompt.select({
           message: "Select priority:",
-          choices: [
-            { title: "Low", value: "low" },
-            { title: "Medium", value: "medium" },
-            { title: "High", value: "high" }
-          ]
+          choices: PRIORITY_CHOICES
         })
 
         const dueDate = yield* Prompt.text({
@@ -178,7 +171,7 @@ const interactiveCommand = Command.make("todo", {}, () =>
         const command: AddTodoCommand = {
           title,
           description,
-          priority: priority as "low" | "medium" | "high",
+          priority,
           dueDate: new Date(dueDate)
         }
 
@@ -247,11 +240,7 @@ const interactiveCommand = Command.make("todo", {}, () =>
           case "priority":
             const newPriority = yield* Prompt.select({
               message: "Select priority:",
-              choices: [
-                { title: "Low", value: "low" as const },
-                { title: "Medium", value: "medium" as const },
-                { title: "High", value: "high" as const }
-              ]
+              choices: PRIORITY_CHOICES
             })
             changes.priority = newPriority
             break

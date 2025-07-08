@@ -1,6 +1,7 @@
 import { Schema } from "@effect/schema"
 import { Data } from "effect"
 import { TodoId, TodoIdSchema } from "./TodoId.js"
+import { DEFAULT_PRIORITY, PRIORITY_VALUES } from "./PriorityConstants.js"
 
 export const TodoStatus = Schema.Literal("pending", "completed", "in_progress")
 export type TodoStatus = Schema.Schema.Type<typeof TodoStatus>
@@ -43,7 +44,7 @@ export const makeTodo = (props: {
     title: props.title,
     ...(props.description ? { description: props.description } : {}),
     status: "pending" as const,
-    priority: props.priority ?? "medium",
+    priority: props.priority ?? DEFAULT_PRIORITY,
     createdAt: now,
     updatedAt: now,
     ...(props.dueDate ? { dueDate: props.dueDate } : {})
@@ -101,7 +102,11 @@ export const isInProgress = (todo: Todo): boolean => todo.status === "in_progres
 export const isOverdue = (todo: Todo): boolean =>
   todo.dueDate !== undefined && todo.dueDate < new Date() && !isCompleted(todo)
 
-export const isHighPriority = (todo: Todo): boolean => todo.priority === "high"
+export const isHighPriority = (todo: Todo): boolean => todo.priority === PRIORITY_VALUES.HIGH
+
+export const isMediumPriority = (todo: Todo): boolean => todo.priority === PRIORITY_VALUES.MEDIUM
+
+export const isLowPriority = (todo: Todo): boolean => todo.priority === PRIORITY_VALUES.LOW
 
 export const equals = (a: Todo) => (b: Todo): boolean => TodoId.equals(a.id)(b.id)
 
