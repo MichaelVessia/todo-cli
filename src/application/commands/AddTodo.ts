@@ -1,7 +1,7 @@
 import { Effect } from "effect"
-import { make as makeTodo, type Todo } from "../../domain/todo/Todo.js"
+import { makeTodo } from "../../domain/todo/Todo.js"
 import { TodoRepository } from "../../domain/todo/TodoRepository.js"
-import { TodoAlreadyExistsError, TodoRepositoryError, TodoValidationError } from "../../domain/todo/TodoErrors.js"
+import { TodoValidationError } from "../../domain/todo/TodoErrors.js"
 
 export interface AddTodoCommand {
   readonly title: string
@@ -10,11 +10,9 @@ export interface AddTodoCommand {
   readonly dueDate: Date
 }
 
-export type AddTodoError = TodoValidationError | TodoAlreadyExistsError | TodoRepositoryError
-
 export const addTodo = (
   command: AddTodoCommand
-): Effect.Effect<Todo, AddTodoError, TodoRepository> =>
+) =>
   Effect.gen(function* () {
     if (!command.title.trim()) {
       return yield* Effect.fail(

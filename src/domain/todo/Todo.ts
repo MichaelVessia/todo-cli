@@ -31,7 +31,7 @@ export class Todo extends Data.Class<{
 }> {
 }
 
-export const make = (props: {
+export const makeTodo = (props: {
   title: string
   description?: string
   priority?: TodoPriority

@@ -103,6 +103,14 @@ export class JsonTodoRepository implements TodoRepository {
       return todo
     }.bind(this))
 
+  readonly update = (todo: Todo): Effect.Effect<Todo, TodoRepositoryError, never> =>
+    Effect.gen(function* (this: JsonTodoRepository) {
+      const todos = yield* this.readTodos()
+      const updatedTodos = [...todos].map(existingTodo => existingTodo.id === todo.id ? todo : existingTodo)
+      yield* this.writeTodos(updatedTodos)
+      return todo
+    }.bind(this))
+
   readonly deleteById = (id: TodoId): Effect.Effect<void, TodoNotFoundError | TodoRepositoryError, never> =>
     Effect.gen(function* (this: JsonTodoRepository) {
       const todos = yield* this.readTodos()
