@@ -10,10 +10,10 @@ import type { TodoRepository } from "../../domain/todo/TodoRepository.js"
 const TodoPersistenceModel = Schema.Array(TodoSchema)
 
 export class JsonTodoRepository implements TodoRepository {
-  constructor(private readonly filePath: string) { }
+  constructor(private readonly filePath: string) {}
 
-  private readonly readTodos = (): Effect.Effect<readonly Todo[], TodoRepositoryError, never> =>
-    Effect.gen(function* (this: JsonTodoRepository) {
+  private readonly readTodos = (): Effect.Effect<ReadonlyArray<Todo>, TodoRepositoryError, never> =>
+    Effect.gen(function*(this: JsonTodoRepository) {
       const fs = yield* FileSystem.FileSystem
 
       const fileExists = yield* fs.exists(this.filePath).pipe(
@@ -57,8 +57,8 @@ export class JsonTodoRepository implements TodoRepository {
       }
     }.bind(this)).pipe(Effect.provide(BunFileSystem.layer))
 
-  private readonly writeTodos = (todos: readonly Todo[]): Effect.Effect<void, TodoRepositoryError, never> =>
-    Effect.gen(function* (this: JsonTodoRepository) {
+  private readonly writeTodos = (todos: ReadonlyArray<Todo>): Effect.Effect<void, TodoRepositoryError, never> =>
+    Effect.gen(function*(this: JsonTodoRepository) {
       const fs = yield* FileSystem.FileSystem
 
       try {
@@ -76,7 +76,7 @@ export class JsonTodoRepository implements TodoRepository {
     }.bind(this)).pipe(Effect.provide(BunFileSystem.layer))
 
   readonly findById = (id: TodoId): Effect.Effect<Todo, TodoNotFoundError | TodoRepositoryError, never> =>
-    Effect.gen(function* (this: JsonTodoRepository) {
+    Effect.gen(function*(this: JsonTodoRepository) {
       const todos = yield* this.readTodos()
       const todo = todos.find((t: Todo) => TodoId.equals(t.id)(id))
 
@@ -87,10 +87,10 @@ export class JsonTodoRepository implements TodoRepository {
       return todo
     }.bind(this))
 
-  readonly findAll = (): Effect.Effect<readonly Todo[], TodoRepositoryError, never> => this.readTodos()
+  readonly findAll = (): Effect.Effect<ReadonlyArray<Todo>, TodoRepositoryError, never> => this.readTodos()
 
   readonly save = (todo: Todo): Effect.Effect<Todo, TodoAlreadyExistsError | TodoRepositoryError, never> =>
-    Effect.gen(function* (this: JsonTodoRepository) {
+    Effect.gen(function*(this: JsonTodoRepository) {
       const todos = yield* this.readTodos()
       const existingIndex = todos.findIndex((t: Todo) => TodoId.equals(t.id)(todo.id))
 
@@ -104,15 +104,15 @@ export class JsonTodoRepository implements TodoRepository {
     }.bind(this))
 
   readonly update = (todo: Todo): Effect.Effect<Todo, TodoRepositoryError, never> =>
-    Effect.gen(function* (this: JsonTodoRepository) {
+    Effect.gen(function*(this: JsonTodoRepository) {
       const todos = yield* this.readTodos()
-      const updatedTodos = [...todos].map(existingTodo => existingTodo.id === todo.id ? todo : existingTodo)
+      const updatedTodos = [...todos].map((existingTodo) => existingTodo.id === todo.id ? todo : existingTodo)
       yield* this.writeTodos(updatedTodos)
       return todo
     }.bind(this))
 
   readonly deleteById = (id: TodoId): Effect.Effect<void, TodoNotFoundError | TodoRepositoryError, never> =>
-    Effect.gen(function* (this: JsonTodoRepository) {
+    Effect.gen(function*(this: JsonTodoRepository) {
       const todos = yield* this.readTodos()
       const todoIndex = todos.findIndex((t: Todo) => TodoId.equals(t.id)(id))
 
@@ -124,22 +124,22 @@ export class JsonTodoRepository implements TodoRepository {
       yield* this.writeTodos(updatedTodos)
     }.bind(this))
 
-  readonly findByStatus = (status: Todo["status"]): Effect.Effect<readonly Todo[], TodoRepositoryError, never> =>
-    Effect.gen(function* (this: JsonTodoRepository) {
+  readonly findByStatus = (status: Todo["status"]): Effect.Effect<ReadonlyArray<Todo>, TodoRepositoryError, never> =>
+    Effect.gen(function*(this: JsonTodoRepository) {
       const todos = yield* this.readTodos()
       return todos.filter((todo: Todo) => todo.status === status)
     }.bind(this))
 
   readonly findByPriority = (
     priority: Todo["priority"]
-  ): Effect.Effect<readonly Todo[], TodoRepositoryError, never> =>
-    Effect.gen(function* (this: JsonTodoRepository) {
+  ): Effect.Effect<ReadonlyArray<Todo>, TodoRepositoryError, never> =>
+    Effect.gen(function*(this: JsonTodoRepository) {
       const todos = yield* this.readTodos()
       return todos.filter((todo: Todo) => todo.priority === priority)
     }.bind(this))
 
   readonly count = (): Effect.Effect<number, TodoRepositoryError, never> =>
-    Effect.gen(function* (this: JsonTodoRepository) {
+    Effect.gen(function*(this: JsonTodoRepository) {
       const todos = yield* this.readTodos()
       return todos.length
     }.bind(this))

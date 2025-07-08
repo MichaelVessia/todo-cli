@@ -1,7 +1,7 @@
 import { Effect } from "effect"
 import { makeTodo } from "../../domain/todo/Todo.js"
-import { TodoRepository } from "../../domain/todo/TodoRepository.js"
 import { TodoValidationError } from "../../domain/todo/TodoErrors.js"
+import { TodoRepository } from "../../domain/todo/TodoRepository.js"
 
 export interface AddTodoCommand {
   readonly title: string
@@ -13,7 +13,7 @@ export interface AddTodoCommand {
 export const addTodo = (
   command: AddTodoCommand
 ) =>
-  Effect.gen(function* () {
+  Effect.gen(function*() {
     if (!command.title.trim()) {
       return yield* Effect.fail(
         new TodoValidationError({

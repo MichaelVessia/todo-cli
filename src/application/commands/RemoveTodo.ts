@@ -1,26 +1,26 @@
-import { Effect } from "effect";
-import { TodoValidationError } from "../../domain/todo/TodoErrors.js";
-import { TodoId } from "../../domain/todo/TodoId.js";
-import { TodoRepository } from "../../domain/todo/TodoRepository.js";
+import { Effect } from "effect"
+import { TodoValidationError } from "../../domain/todo/TodoErrors.js"
+import type { TodoId } from "../../domain/todo/TodoId.js"
+import { TodoRepository } from "../../domain/todo/TodoRepository.js"
 
-export interface RemoveTodoCommand {
-  readonly id: TodoId;
+export interface RemoveTodosCommand {
+  readonly ids: Array<TodoId>
 }
 
-export const removeTodo = (
-  command: RemoveTodoCommand
+export const removeTodos = (
+  command: RemoveTodosCommand
 ) =>
   Effect.gen(function* () {
-    if (!command.id.trim()) {
+    if (command.ids.length === 0) {
       return yield* Effect.fail(
         new TodoValidationError({
-          field: "id",
-          reason: "ID cannot be empty"
+          field: "ids",
+          reason: "At least one ID must be provided"
         })
       )
     }
 
     const repository = yield* TodoRepository
 
-    yield* repository.deleteById(command.id)
+    yield* Effect.forEach(command.ids, (id) => repository.deleteById(id))
   })

@@ -1,7 +1,7 @@
 import { Schema } from "@effect/schema"
 import { Data } from "effect"
-import { TodoId, TodoIdSchema } from "./TodoId.js"
 import { DEFAULT_PRIORITY, PRIORITY_VALUES } from "./PriorityConstants.js"
+import { TodoId, TodoIdSchema } from "./TodoId.js"
 
 export const TodoStatus = Schema.Literal("pending", "completed", "in_progress")
 export type TodoStatus = Schema.Schema.Type<typeof TodoStatus>

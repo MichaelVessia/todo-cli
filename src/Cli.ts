@@ -1,9 +1,9 @@
 import * as Command from "@effect/cli/Command"
 import * as Prompt from "@effect/cli/Prompt"
 import { Console, Effect } from "effect"
+import { addCommand, completeCommand, listCommand, removeCommand, updateCommand } from "./cli/commands.js"
+import { promptForAddTodo, promptForListTodos, promptForRemoveTodos, promptForUpdateTodo } from "./cli/prompts.js"
 import { TodoRepositoryLayer } from "./infra/layers/TodoRepositoryLayer.js"
-import { addCommand, listCommand, updateCommand, removeCommand, completeCommand } from "./cli/commands.js"
-import { promptForAddTodo, promptForListTodos, promptForRemoveTodo, promptForUpdateTodo } from "./cli/prompts.js"
 
 const interactiveCommand = Command.make("todo", {}, () =>
   Effect.gen(function* () {
@@ -13,7 +13,7 @@ const interactiveCommand = Command.make("todo", {}, () =>
         { title: "Add a new todo", value: "add" },
         { title: "List all todos", value: "list" },
         { title: "Update a todo", value: "update" },
-        { title: "Remove a todo", value: "remove" },
+        { title: "Remove todos", value: "remove" },
         { title: "Complete a todo", value: "complete" }
       ]
     })
@@ -32,7 +32,7 @@ const interactiveCommand = Command.make("todo", {}, () =>
         break
 
       case "remove":
-        yield* promptForRemoveTodo()
+        yield* promptForRemoveTodos()
         break
 
       case "complete":
@@ -41,11 +41,8 @@ const interactiveCommand = Command.make("todo", {}, () =>
     }
   }).pipe(
     Effect.provide(TodoRepositoryLayer),
-    Effect.catchAll((error) =>
-      Console.log(`Error: ${error.message}`)
-    )
-  )
-)
+    Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
+  ))
 
 const command = interactiveCommand.pipe(
   Command.withSubcommands([addCommand, listCommand, updateCommand, removeCommand, completeCommand])
