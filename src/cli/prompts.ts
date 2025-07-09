@@ -5,6 +5,7 @@ import { type AddTodoCommand, addTodo } from "../operations/AddTodo.js"
 import { getTodos } from "../operations/ListTodos.js"
 import { removeTodos } from "../operations/RemoveTodo.js"
 import { switchDatabase } from "../operations/SwitchDatabase.js"
+import { syncCurrentWithDatabase } from "../operations/SyncTodos.js"
 import type { UpdateTodoCommand } from "../operations/UpdateTodo.js"
 import { updateTodo } from "../operations/UpdateTodo.js"
 
@@ -228,4 +229,36 @@ export const promptForSwitchDatabase = () =>
     }
 
     yield* switchDatabase(config)
+  })
+
+export const promptForSyncTodos = () =>
+  Effect.gen(function* () {
+    const targetProviderType = yield* Prompt.select({
+      message: "Select target database to sync with:",
+      choices: [
+        { title: "JSON File", value: "json" },
+        { title: "Markdown File", value: "markdown" },
+        { title: "Memory (temporary)", value: "memory" }
+      ]
+    })
+
+    const targetConfig: any = { type: targetProviderType }
+
+    if (targetProviderType === "json" || targetProviderType === "markdown") {
+      const useCustomPath = yield* Prompt.confirm({
+        message: "Use custom file path?",
+        default: false
+      })
+
+      if (useCustomPath) {
+        const extension = targetProviderType === "json" ? "json" : "md"
+        const filePath = yield* Prompt.text({
+          message: `Enter file path for ${targetProviderType} database:`,
+          default: `~/todos.${extension}`
+        })
+        targetConfig.filePath = filePath
+      }
+    }
+
+    yield* syncCurrentWithDatabase(targetConfig)
   })

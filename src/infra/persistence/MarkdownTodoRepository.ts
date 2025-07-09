@@ -56,7 +56,7 @@ export class MarkdownTodoRepository implements TodoRepository {
         )
         if (metadataMatch) {
           const [, id, priority, created, updated, due] = metadataMatch
-          currentTodo.id = TodoId.fromString(id)
+          currentTodo.id = TodoId.make(id)
           currentTodo.priority = priority
           currentTodo.createdAt = new Date(created)
           currentTodo.updatedAt = new Date(updated)

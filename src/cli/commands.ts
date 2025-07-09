@@ -6,6 +6,7 @@ import {
   promptForListTodos,
   promptForRemoveTodos,
   promptForSwitchDatabase,
+  promptForSyncTodos,
   promptForUpdateTodo
 } from "./prompts.js"
 
@@ -41,4 +42,8 @@ export const completeCommand = Command.make("complete", {}, () => Console.log("c
 
 export const switchCommand = Command.make("switch", {}, () =>
   promptForSwitchDatabase().pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
+)
+
+export const syncCommand = Command.make("sync", {}, () =>
+  promptForSyncTodos().pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
 )
