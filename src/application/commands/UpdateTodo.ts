@@ -1,19 +1,19 @@
 import { Effect } from "effect"
 import type { Todo } from "../../domain/todo/Todo.js"
-import type { TodoValidationError } from "../../domain/todo/TodoErrors.js"
+import { TodoValidationError } from "../../domain/todo/TodoErrors.js"
 import type { TodoId } from "../../domain/todo/TodoId.js"
-import type { TodoRepository } from "../../domain/todo/TodoRepository.js"
+import { TodoRepository } from "../../domain/todo/TodoRepository.js"
 import type { Mutable } from "../../shared/types.js"
 
 export interface UpdateTodoCommand {
   readonly id: TodoId
-  readonly changes: Partial<Mutable<Pick<Todo, "title" | "description" | "priority" | "dueDate">>>
+  readonly changes: Partial<Mutable<Pick<Todo, "title" | "description" | "priority" | "dueDate" | "status">>>
 }
 
 export const updateTodo = (
   command: UpdateTodoCommand
 ) =>
-  Effect.gen(function*() {
+  Effect.gen(function* () {
     if (!command.id.trim()) {
       return yield* Effect.fail(
         new TodoValidationError({

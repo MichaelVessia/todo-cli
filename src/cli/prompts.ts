@@ -160,3 +160,39 @@ export const promptForRemoveTodos = () =>
     })
     yield* Console.log(`${selectedTodos.length} todos removed successfully.`)
   })
+
+export const promptForCompleteTodos = () =>
+  Effect.gen(function* () {
+    const todos = yield* getTodos()
+
+    if (todos.length === 0) {
+      yield* Console.log("No todos found!")
+      return
+    }
+
+    const todoChoices = todos.map((todo) => ({
+      title: `${todo.title} (${todo.status}) - ${todo.priority}`,
+      value: todo.id
+    }))
+
+    const selectedTodoIds = yield* Prompt.multiSelect({
+      message: "Select todos to complete:",
+      choices: todoChoices
+    })
+
+    if (selectedTodoIds.length === 0) {
+      yield* Console.log("No todos selected.")
+      return
+    }
+
+    const selectedTodos = todos.filter((todo) => selectedTodoIds.includes(todo.id))
+
+    yield* Effect.forEach(selectedTodos, (todo) =>
+      updateTodo({
+        id: todo.id,
+        changes: { status: "completed" }
+      })
+    )
+
+    yield* Console.log(`${selectedTodos.length} todos completed successfully.`)
+  })
