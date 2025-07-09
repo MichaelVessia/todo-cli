@@ -1,7 +1,7 @@
 import { Effect } from "effect"
-import { makeTodo } from "../../domain/todo/Todo.js"
-import { TodoValidationError } from "../../domain/todo/TodoErrors.js"
-import { TodoRepository } from "../../domain/todo/TodoRepository.js"
+import { makeTodo } from "../domain/todo/Todo.js"
+import { TodoValidationError } from "../domain/todo/TodoErrors.js"
+import { TodoRepository } from "../domain/todo/TodoRepository.js"
 
 export interface AddTodoCommand {
   readonly title: string

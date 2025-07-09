@@ -1,7 +1,7 @@
 import { Effect } from "effect"
-import { TodoValidationError } from "../../domain/todo/TodoErrors.js"
-import type { TodoId } from "../../domain/todo/TodoId.js"
-import { TodoRepository } from "../../domain/todo/TodoRepository.js"
+import { TodoValidationError } from "../domain/todo/TodoErrors.js"
+import type { TodoId } from "../domain/todo/TodoId.js"
+import { TodoRepository } from "../domain/todo/TodoRepository.js"
 
 export interface RemoveTodosCommand {
   readonly ids: Array<TodoId>

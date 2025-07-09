@@ -1,9 +1,9 @@
 import { Effect } from "effect"
-import type { Todo } from "../../domain/todo/Todo.js"
-import { TodoValidationError } from "../../domain/todo/TodoErrors.js"
-import type { TodoId } from "../../domain/todo/TodoId.js"
-import { TodoRepository } from "../../domain/todo/TodoRepository.js"
-import type { Mutable } from "../../shared/types.js"
+import type { Todo } from "../domain/todo/Todo.js"
+import { TodoValidationError } from "../domain/todo/TodoErrors.js"
+import type { TodoId } from "../domain/todo/TodoId.js"
+import { TodoRepository } from "../domain/todo/TodoRepository.js"
+import type { Mutable } from "../shared/types.js"
 
 export interface UpdateTodoCommand {
   readonly id: TodoId

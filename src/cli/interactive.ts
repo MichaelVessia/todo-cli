@@ -1,9 +1,9 @@
 import * as Command from "@effect/cli/Command"
 import * as Prompt from "@effect/cli/Prompt"
 import { Console, Effect } from "effect"
-import { addCommand, completeCommand, listCommand, removeCommand, updateCommand } from "./cli/commands.js"
-import { promptForAddTodo, promptForCompleteTodos, promptForListTodos, promptForRemoveTodos, promptForUpdateTodo } from "./cli/prompts.js"
-import { TodoRepositoryLayer } from "./infra/layers/TodoRepositoryLayer.js"
+import { addCommand, completeCommand, listCommand, removeCommand, updateCommand } from "./commands.js"
+import { promptForAddTodo, promptForCompleteTodos, promptForListTodos, promptForRemoveTodos, promptForUpdateTodo } from "./prompts.js"
+import { TodoRepositoryLayer } from "../infra/layers/TodoRepositoryLayer.js"
 
 const interactiveCommand = Command.make("todo", {}, () =>
   Effect.gen(function* () {
