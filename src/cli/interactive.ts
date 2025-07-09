@@ -1,9 +1,15 @@
 import * as Command from "@effect/cli/Command"
 import * as Prompt from "@effect/cli/Prompt"
 import { Console, Effect } from "effect"
-import { addCommand, completeCommand, listCommand, removeCommand, updateCommand } from "./commands.js"
-import { promptForAddTodo, promptForCompleteTodos, promptForListTodos, promptForRemoveTodos, promptForUpdateTodo } from "./prompts.js"
 import { TodoRepositoryLayer } from "../infra/layers/TodoRepositoryLayer.js"
+import { addCommand, completeCommand, listCommand, removeCommand, updateCommand } from "./commands.js"
+import {
+  promptForAddTodo,
+  promptForCompleteTodos,
+  promptForListTodos,
+  promptForRemoveTodos,
+  promptForUpdateTodo
+} from "./prompts.js"
 
 const interactiveCommand = Command.make("todo", {}, () =>
   Effect.gen(function* () {
@@ -42,7 +48,8 @@ const interactiveCommand = Command.make("todo", {}, () =>
   }).pipe(
     Effect.provide(TodoRepositoryLayer),
     Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-  ))
+  )
+)
 
 const command = interactiveCommand.pipe(
   Command.withSubcommands([addCommand, listCommand, updateCommand, removeCommand, completeCommand])

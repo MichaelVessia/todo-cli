@@ -35,7 +35,10 @@ export const TodoId = {
     return TodoId.make(id)
   },
 
-  equals: (a: TodoId) => (b: TodoId): boolean => a === b,
+  equals:
+    (a: TodoId) =>
+    (b: TodoId): boolean =>
+      a === b,
 
   toString: (id: TodoId): string => Brand.nominal<TodoId>()(id)
 }

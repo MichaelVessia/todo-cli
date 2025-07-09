@@ -10,9 +10,7 @@ export interface UpdateTodoCommand {
   readonly changes: Partial<Mutable<Pick<Todo, "title" | "description" | "priority" | "dueDate" | "status">>>
 }
 
-export const updateTodo = (
-  command: UpdateTodoCommand
-) =>
+export const updateTodo = (command: UpdateTodoCommand) =>
   Effect.gen(function* () {
     if (!command.id.trim()) {
       return yield* Effect.fail(

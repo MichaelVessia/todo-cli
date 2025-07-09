@@ -29,8 +29,7 @@ export class Todo extends Data.Class<{
   readonly createdAt: Date
   readonly updatedAt: Date
   readonly dueDate?: Date
-}> {
-}
+}> {}
 
 export const makeTodo = (props: {
   title: string
@@ -65,33 +64,41 @@ export const start = (todo: Todo): Todo =>
     updatedAt: new Date()
   })
 
-export const updateTitle = (title: string) => (todo: Todo): Todo =>
-  new Todo({
-    ...todo,
-    title,
-    updatedAt: new Date()
-  })
+export const updateTitle =
+  (title: string) =>
+  (todo: Todo): Todo =>
+    new Todo({
+      ...todo,
+      title,
+      updatedAt: new Date()
+    })
 
-export const updateDescription = (description: string) => (todo: Todo): Todo =>
-  new Todo({
-    ...todo,
-    description,
-    updatedAt: new Date()
-  })
+export const updateDescription =
+  (description: string) =>
+  (todo: Todo): Todo =>
+    new Todo({
+      ...todo,
+      description,
+      updatedAt: new Date()
+    })
 
-export const updatePriority = (priority: TodoPriority) => (todo: Todo): Todo =>
-  new Todo({
-    ...todo,
-    priority,
-    updatedAt: new Date()
-  })
+export const updatePriority =
+  (priority: TodoPriority) =>
+  (todo: Todo): Todo =>
+    new Todo({
+      ...todo,
+      priority,
+      updatedAt: new Date()
+    })
 
-export const updateDueDate = (dueDate: Date) => (todo: Todo): Todo =>
-  new Todo({
-    ...todo,
-    dueDate,
-    updatedAt: new Date()
-  })
+export const updateDueDate =
+  (dueDate: Date) =>
+  (todo: Todo): Todo =>
+    new Todo({
+      ...todo,
+      dueDate,
+      updatedAt: new Date()
+    })
 
 export const isCompleted = (todo: Todo): boolean => todo.status === "completed"
 
@@ -108,7 +115,10 @@ export const isMediumPriority = (todo: Todo): boolean => todo.priority === PRIOR
 
 export const isLowPriority = (todo: Todo): boolean => todo.priority === PRIORITY_VALUES.LOW
 
-export const equals = (a: Todo) => (b: Todo): boolean => TodoId.equals(a.id)(b.id)
+export const equals =
+  (a: Todo) =>
+  (b: Todo): boolean =>
+    TodoId.equals(a.id)(b.id)
 
 export const toJSON = (todo: Todo) => ({
   id: TodoId.toString(todo.id),

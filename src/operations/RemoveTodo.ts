@@ -4,12 +4,10 @@ import type { TodoId } from "../domain/todo/TodoId.js"
 import { TodoRepository } from "../domain/todo/TodoRepository.js"
 
 export interface RemoveTodosCommand {
-  readonly ids: Array<TodoId>
+  readonly ids: TodoId[]
 }
 
-export const removeTodos = (
-  command: RemoveTodosCommand
-) =>
+export const removeTodos = (command: RemoveTodosCommand) =>
   Effect.gen(function* () {
     if (command.ids.length === 0) {
       return yield* Effect.fail(

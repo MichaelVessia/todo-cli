@@ -1,11 +1,11 @@
 import * as Prompt from "@effect/cli/Prompt"
 import { Console, Effect } from "effect"
-import { addTodo, type AddTodoCommand } from "../operations/AddTodo.js"
+import { PRIORITY_CHOICES } from "../domain/todo/PriorityConstants.js"
+import { type AddTodoCommand, addTodo } from "../operations/AddTodo.js"
 import { getTodos } from "../operations/ListTodos.js"
 import { removeTodos } from "../operations/RemoveTodo.js"
 import type { UpdateTodoCommand } from "../operations/UpdateTodo.js"
 import { updateTodo } from "../operations/UpdateTodo.js"
-import { PRIORITY_CHOICES } from "../domain/todo/PriorityConstants.js"
 
 export const promptForAddTodo = () =>
   Effect.gen(function* () {

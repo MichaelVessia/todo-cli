@@ -10,10 +10,8 @@ export interface AddTodoCommand {
   readonly dueDate: Date
 }
 
-export const addTodo = (
-  command: AddTodoCommand
-) =>
-  Effect.gen(function*() {
+export const addTodo = (command: AddTodoCommand) =>
+  Effect.gen(function* () {
     if (!command.title.trim()) {
       return yield* Effect.fail(
         new TodoValidationError({
