@@ -9,7 +9,6 @@ import {
   listTodosWithArgs,
   removeTodosWithArgs,
   switchDatabaseWithArgs,
-  syncDatabaseWithArgs,
   updateTodoWithArgs
 } from "./core-handlers.js"
 import {
@@ -17,7 +16,6 @@ import {
   promptForCompleteTodos,
   promptForRemoveTodos,
   promptForSwitchDatabase,
-  promptForSyncTodos,
   promptForUpdateTodo
 } from "./prompts.js"
 
@@ -145,7 +143,7 @@ export const completeCommand = Command.make(
   }
 )
 
-const switchProvider = Options.choice("provider", ["json", "markdown", "memory"] as const).pipe(Options.optional)
+const switchProvider = Options.choice("provider", ["json", "markdown"] as const).pipe(Options.optional)
 const switchFilePath = Options.text("file-path").pipe(Options.optional)
 
 export const switchCommand = Command.make(
@@ -165,35 +163,6 @@ export const switchCommand = Command.make(
       )
     } else {
       return promptForSwitchDatabase().pipe(
-        Effect.provide(TodoRepositoryLayer),
-        Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-      )
-    }
-  }
-)
-
-const syncTargetProvider = Options.choice("target-provider", ["json", "markdown", "memory"] as const).pipe(
-  Options.optional
-)
-const syncTargetPath = Options.text("target-path").pipe(Options.optional)
-
-export const syncCommand = Command.make(
-  "sync",
-  {
-    targetProvider: syncTargetProvider,
-    targetPath: syncTargetPath
-  },
-  (args) => {
-    if (args.targetProvider._tag === "Some") {
-      return syncDatabaseWithArgs({
-        targetProvider: args.targetProvider.value,
-        targetFilePath: args.targetPath._tag === "Some" ? args.targetPath.value : undefined
-      }).pipe(
-        Effect.provide(TodoRepositoryLayer),
-        Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-      )
-    } else {
-      return promptForSyncTodos().pipe(
         Effect.provide(TodoRepositoryLayer),
         Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
       )

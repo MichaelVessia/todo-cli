@@ -4,7 +4,6 @@ import { configManager } from "../infra/config/ConfigManager.js"
 import { type AddTodoCommand, addTodo } from "../operations/AddTodo.js"
 import { getTodos } from "../operations/ListTodos.js"
 import { removeTodos } from "../operations/RemoveTodo.js"
-import { switchDatabase } from "../operations/SwitchDatabase.js"
 import { syncCurrentWithDatabase } from "../operations/SyncTodos.js"
 import type { UpdateTodoCommand } from "../operations/UpdateTodo.js"
 import { updateTodo } from "../operations/UpdateTodo.js"
@@ -33,13 +32,8 @@ export interface CompleteTodoArgs {
 }
 
 export interface SwitchDatabaseArgs {
-  provider: "json" | "markdown" | "memory"
+  provider: "json" | "markdown"
   filePath?: string
-}
-
-export interface SyncDatabaseArgs {
-  targetProvider: "json" | "markdown" | "memory"
-  targetFilePath?: string
 }
 
 export const addTodoWithArgs = (args: AddTodoArgs) =>
@@ -153,36 +147,22 @@ export const completeTodosWithArgs = (args: CompleteTodoArgs) =>
 
 export const switchDatabaseWithArgs = (args: SwitchDatabaseArgs) =>
   Effect.gen(function* () {
-    const config: any = { type: args.provider }
-
-    if (args.filePath && (args.provider === "json" || args.provider === "markdown")) {
-      config.filePath = args.filePath
-    }
-
-    yield* switchDatabase(config)
-    yield* Console.log(`Switched to ${args.provider} database${args.filePath ? ` at ${args.filePath}` : ""}`)
-  })
-
-export const syncDatabaseWithArgs = (args: SyncDatabaseArgs) =>
-  Effect.gen(function* () {
     const currentConfig = yield* configManager.getDataProviderConfig()
 
-    if (currentConfig.type === args.targetProvider) {
+    if (currentConfig.type === args.provider) {
       const currentFilePath = "filePath" in currentConfig ? currentConfig.filePath : undefined
-      if (currentFilePath === args.targetFilePath) {
+      if (currentFilePath === args.filePath) {
         yield* Console.log("Target database is the same as current database.")
         return
       }
     }
 
-    const targetConfig: any = { type: args.targetProvider }
+    const targetConfig: any = { type: args.provider }
 
-    if (args.targetFilePath && (args.targetProvider === "json" || args.targetProvider === "markdown")) {
-      targetConfig.filePath = args.targetFilePath
+    if (args.filePath && (args.provider === "json" || args.provider === "markdown")) {
+      targetConfig.filePath = args.filePath
     }
 
     yield* syncCurrentWithDatabase(targetConfig)
-    yield* Console.log(
-      `Synced with ${args.targetProvider} database${args.targetFilePath ? ` at ${args.targetFilePath}` : ""}`
-    )
+    yield* Console.log(`Synced with ${args.provider} database${args.filePath ? ` at ${args.filePath}` : ""}`)
   })
