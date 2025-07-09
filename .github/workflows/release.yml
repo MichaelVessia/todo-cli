@@ -28,31 +28,34 @@ jobs:
       - name: Run tests
         run: bun test
 
-      - name: Create Release Pull Request or Tag
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          version: bun run changeset-version
-          publish: bun run changeset-publish
-          commit: "chore: release packages"
-          title: "chore: release packages"
-          createGithubReleases: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get current version
+        id: package-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        id: tag-exists
+        run: |
+          if git show-ref --tags --quiet --verify -- "refs/tags/v${{ steps.package-version.outputs.version }}"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create single file executable
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.tag-exists.outputs.exists == 'false'
         run: bun build --compile --outfile=todo-cli ./src/bin.ts
 
       - name: Create GitHub release
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.tag-exists.outputs.exists == 'false'
         uses: softprops/action-gh-release@v1
         with:
           files: |
             todo-cli
-          tag_name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
-          name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          tag_name: v${{ steps.package-version.outputs.version }}
+          name: v${{ steps.package-version.outputs.version }}
           body: |
-            See [CHANGELOG.md](https://github.com/MichaelVessia/todo-cli/blob/master/CHANGELOG.md) for details.
+            Release v${{ steps.package-version.outputs.version }}
+            
+            Download the `todo-cli` executable from the assets below.
           draft: false
           prerelease: false
