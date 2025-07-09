@@ -1,6 +1,7 @@
 import * as Prompt from "@effect/cli/Prompt"
 import { Console, Effect } from "effect"
 import { PRIORITY_CHOICES } from "../domain/todo/PriorityConstants.js"
+import { configManager } from "../infra/config/ConfigManager.js"
 import { getTodos } from "../operations/ListTodos.js"
 import {
   addTodoWithArgs,
@@ -182,12 +183,24 @@ export const promptForCompleteTodos = () =>
 
 export const promptForSwitchDatabase = () =>
   Effect.gen(function* () {
+    const currentConfig = yield* configManager.getDataProviderConfig()
+
+    const allChoices = [
+      { title: "JSON File", value: "json" },
+      { title: "Markdown File", value: "markdown" }
+    ]
+
+    // Filter out current database type from choices
+    const availableChoices = allChoices.filter((choice) => choice.value !== currentConfig.type)
+
+    if (availableChoices.length === 0) {
+      yield* Console.log("No other database providers available to switch to.")
+      return
+    }
+
     const providerType = yield* Prompt.select({
       message: "Select database provider:",
-      choices: [
-        { title: "JSON File", value: "json" },
-        { title: "Markdown File", value: "markdown" }
-      ]
+      choices: availableChoices
     })
 
     let filePath: string | undefined
@@ -200,10 +213,34 @@ export const promptForSwitchDatabase = () =>
 
       if (useCustomPath) {
         const extension = providerType === "json" ? "json" : "md"
-        filePath = yield* Prompt.text({
-          message: `Enter file path for ${providerType} database:`,
-          default: `~/todos.${extension}`
-        })
+        const currentFilePath = "filePath" in currentConfig ? currentConfig.filePath : undefined
+
+        const getCustomPath = (): Effect.Effect<string, never, never> =>
+          Effect.gen(function* () {
+            const inputPath = yield* Prompt.text({
+              message: `Enter file path for ${providerType} database:`,
+              default: `~/todos.${extension}`
+            })
+
+            // Check if this would be the same as current database
+            if (currentConfig.type === providerType && currentFilePath === inputPath) {
+              yield* Console.log("This is the same as your current database. Please choose a different file path.")
+              return yield* getCustomPath()
+            }
+
+            return inputPath
+          })
+
+        filePath = yield* getCustomPath()
+      } else {
+        // Check if default path would be the same as current database
+        const currentFilePath = "filePath" in currentConfig ? currentConfig.filePath : undefined
+        if (currentConfig.type === providerType && currentFilePath === undefined) {
+          yield* Console.log(
+            "This would use the same default database you're already using. Please use a custom file path instead."
+          )
+          return
+        }
       }
     }
 
