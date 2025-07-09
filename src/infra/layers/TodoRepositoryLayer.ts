@@ -5,6 +5,7 @@ import { BunFileSystem } from "@effect/platform-bun"
 import { ConfigProvider, Effect, Layer } from "effect"
 import { TodoRepositoryError } from "../../domain/todo/TodoErrors.js"
 import { TodoRepository } from "../../domain/todo/TodoRepository.js"
+import { configManager } from "../config/ConfigManager.js"
 import { type DataProviderConfig, loadDataProviderConfig } from "../config/DataProviderConfig.js"
 import { make as makeJsonTodoRepository } from "../persistence/JsonTodoRepository.js"
 import { make as makeMarkdownTodoRepository } from "../persistence/MarkdownTodoRepository.js"
@@ -62,7 +63,16 @@ const createRepository = (
 export const TodoRepositoryLayer = Layer.effect(
   TodoRepository,
   Effect.gen(function* () {
-    const config = yield* loadDataProviderConfig.pipe(Effect.withConfigProvider(ConfigProvider.fromEnv()))
-    return yield* createRepository(config)
+    // Try to load from config file first, fallback to environment variables
+    const configFromFile = yield* Effect.either(configManager.getDataProviderConfig())
+
+    if (configFromFile._tag === "Right") {
+      // Config file exists and was loaded successfully
+      return yield* createRepository(configFromFile.right)
+    } else {
+      // Fallback to environment variables
+      const config = yield* loadDataProviderConfig.pipe(Effect.withConfigProvider(ConfigProvider.fromEnv()))
+      return yield* createRepository(config)
+    }
   })
 ).pipe(Layer.provide(BunFileSystem.layer))
