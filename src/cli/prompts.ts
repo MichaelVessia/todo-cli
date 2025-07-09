@@ -4,6 +4,7 @@ import { PRIORITY_CHOICES } from "../domain/todo/PriorityConstants.js"
 import { type AddTodoCommand, addTodo } from "../operations/AddTodo.js"
 import { getTodos } from "../operations/ListTodos.js"
 import { removeTodos } from "../operations/RemoveTodo.js"
+import { switchDatabase } from "../operations/SwitchDatabase.js"
 import type { UpdateTodoCommand } from "../operations/UpdateTodo.js"
 import { updateTodo } from "../operations/UpdateTodo.js"
 
@@ -195,4 +196,36 @@ export const promptForCompleteTodos = () =>
     )
 
     yield* Console.log(`${selectedTodos.length} todos completed successfully.`)
+  })
+
+export const promptForSwitchDatabase = () =>
+  Effect.gen(function* () {
+    const providerType = yield* Prompt.select({
+      message: "Select database provider:",
+      choices: [
+        { title: "JSON File", value: "json" },
+        { title: "Markdown File", value: "markdown" },
+        { title: "Memory (temporary)", value: "memory" }
+      ]
+    })
+
+    const config: any = { type: providerType }
+
+    if (providerType === "json" || providerType === "markdown") {
+      const useCustomPath = yield* Prompt.confirm({
+        message: "Use custom file path?",
+        default: false
+      })
+
+      if (useCustomPath) {
+        const extension = providerType === "json" ? "json" : "md"
+        const filePath = yield* Prompt.text({
+          message: `Enter file path for ${providerType} database:`,
+          default: `~/todos.${extension}`
+        })
+        config.filePath = filePath
+      }
+    }
+
+    yield* switchDatabase(config)
   })

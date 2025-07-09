@@ -1,7 +1,13 @@
 import * as Command from "@effect/cli/Command"
 import { Console, Effect } from "effect"
 import { TodoRepositoryLayer } from "../infra/layers/TodoRepositoryLayer.js"
-import { promptForAddTodo, promptForListTodos, promptForRemoveTodos, promptForUpdateTodo } from "./prompts.js"
+import {
+  promptForAddTodo,
+  promptForListTodos,
+  promptForRemoveTodos,
+  promptForSwitchDatabase,
+  promptForUpdateTodo
+} from "./prompts.js"
 
 export const addCommand = Command.make("add", {}, () =>
   promptForAddTodo().pipe(
@@ -32,3 +38,7 @@ export const removeCommand = Command.make("remove", {}, () =>
 )
 
 export const completeCommand = Command.make("complete", {}, () => Console.log("complete todo..."))
+
+export const switchCommand = Command.make("switch", {}, () =>
+  promptForSwitchDatabase().pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
+)
