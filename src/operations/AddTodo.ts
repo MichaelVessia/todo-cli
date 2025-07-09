@@ -7,7 +7,7 @@ export interface AddTodoCommand {
   readonly title: string
   readonly description: string
   readonly priority: "low" | "medium" | "high"
-  readonly dueDate: Date
+  readonly dueDate?: Date
 }
 
 export const addTodo = (command: AddTodoCommand) =>

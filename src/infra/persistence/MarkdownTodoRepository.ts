@@ -35,16 +35,21 @@ export class MarkdownTodoRepository implements TodoRepository {
 
         // If we were building a previous todo, save it
         if (currentTodo) {
+          // Generate ID if it wasn't set from metadata
+          if (!currentTodo.id) {
+            currentTodo.id = TodoId.generate()
+          }
           todos.push(new Todo(currentTodo))
         }
 
         // Start new todo
+        const now = new Date()
         currentTodo = {
           title: title.trim(),
           status: currentSection,
           priority: "medium" as const,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          createdAt: now,
+          updatedAt: now
         }
         continue
       }
@@ -52,16 +57,29 @@ export class MarkdownTodoRepository implements TodoRepository {
       // Check for metadata comments
       if (currentTodo && line.trim().startsWith("<!--")) {
         const metadataMatch = line.match(
-          /<!-- id: (.+), priority: (.+), created: (.+), updated: (.+)(?:, due: (.+))? -->/
+          /<!-- id: ([^,]+), priority: ([^,]+), created: ([^,]+), updated: ([^,]+)(?:, due: ([^,]+))? -->/
         )
         if (metadataMatch) {
           const [, id, priority, created, updated, due] = metadataMatch
           currentTodo.id = TodoId.make(id)
           currentTodo.priority = priority
-          currentTodo.createdAt = new Date(created)
-          currentTodo.updatedAt = new Date(updated)
+
+          const createdDate = new Date(created)
+          const updatedDate = new Date(updated)
+
+          if (Number.isNaN(createdDate.getTime()) || Number.isNaN(updatedDate.getTime())) {
+            throw new Error(`Invalid date format in markdown metadata: created=${created}, updated=${updated}`)
+          }
+
+          currentTodo.createdAt = createdDate
+          currentTodo.updatedAt = updatedDate
+
           if (due) {
-            currentTodo.dueDate = new Date(due)
+            const dueDate = new Date(due)
+            if (Number.isNaN(dueDate.getTime())) {
+              throw new Error(`Invalid due date format in markdown metadata: due=${due}`)
+            }
+            currentTodo.dueDate = dueDate
           }
         }
         continue
@@ -78,6 +96,10 @@ export class MarkdownTodoRepository implements TodoRepository {
 
     // Save the last todo
     if (currentTodo) {
+      // Generate ID if it wasn't set from metadata
+      if (!currentTodo.id) {
+        currentTodo.id = TodoId.generate()
+      }
       todos.push(new Todo(currentTodo))
     }
 

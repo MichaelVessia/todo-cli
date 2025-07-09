@@ -38,6 +38,14 @@ export const makeTodo = (props: {
   dueDate?: Date
 }): Todo => {
   const now = new Date()
+  // Validate that the dates are valid
+  if (Number.isNaN(now.getTime())) {
+    throw new Error("Invalid current date")
+  }
+  if (props.dueDate && Number.isNaN(props.dueDate.getTime())) {
+    throw new Error("Invalid due date")
+  }
+
   return new Todo({
     id: TodoId.generate(),
     title: props.title,

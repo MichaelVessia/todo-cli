@@ -2,13 +2,16 @@ import * as Prompt from "@effect/cli/Prompt"
 import { Console, Effect } from "effect"
 import { PRIORITY_CHOICES } from "../domain/todo/PriorityConstants.js"
 import { configManager } from "../infra/config/ConfigManager.js"
-import { type AddTodoCommand, addTodo } from "../operations/AddTodo.js"
 import { getTodos } from "../operations/ListTodos.js"
-import { removeTodos } from "../operations/RemoveTodo.js"
-import { switchDatabase } from "../operations/SwitchDatabase.js"
-import { syncCurrentWithDatabase } from "../operations/SyncTodos.js"
-import type { UpdateTodoCommand } from "../operations/UpdateTodo.js"
-import { updateTodo } from "../operations/UpdateTodo.js"
+import {
+  addTodoWithArgs,
+  completeTodosWithArgs,
+  listTodosWithArgs,
+  removeTodosWithArgs,
+  switchDatabaseWithArgs,
+  syncDatabaseWithArgs,
+  updateTodoWithArgs
+} from "./core-handlers.js"
 
 export const promptForAddTodo = () =>
   Effect.gen(function* () {
@@ -31,21 +34,17 @@ export const promptForAddTodo = () =>
       default: new Date().toISOString().split("T")[0]
     })
 
-    const command: AddTodoCommand = {
+    yield* addTodoWithArgs({
       title,
       description,
       priority,
-      dueDate: new Date(dueDate)
-    }
-
-    const result = yield* addTodo(command)
-    yield* Console.log(`Todo added: ${result.title}`)
+      dueDate: dueDate.trim() !== "" ? dueDate : undefined
+    })
   })
 
 export const promptForListTodos = () =>
   Effect.gen(function* () {
-    const todos = yield* getTodos()
-    yield* Effect.forEach(todos, (todo) => Console.log(`${todo.title}, ${todo.status}`))
+    yield* listTodosWithArgs()
   })
 
 export const promptForUpdateTodo = () =>
@@ -85,7 +84,7 @@ export const promptForUpdateTodo = () =>
       ]
     })
 
-    const changes: UpdateTodoCommand["changes"] = {}
+    const args: any = { id: selectedTodoId }
 
     switch (updateField) {
       case "title": {
@@ -93,7 +92,7 @@ export const promptForUpdateTodo = () =>
           message: "Enter new title:",
           default: selectedTodo.title
         })
-        changes.title = newTitle
+        args.title = newTitle
         break
       }
       case "description": {
@@ -101,7 +100,7 @@ export const promptForUpdateTodo = () =>
           message: "Enter new description:",
           default: selectedTodo.description || ""
         })
-        changes.description = newDescription
+        args.description = newDescription
         break
       }
       case "priority": {
@@ -109,7 +108,7 @@ export const promptForUpdateTodo = () =>
           message: "Select priority:",
           choices: PRIORITY_CHOICES
         })
-        changes.priority = newPriority
+        args.priority = newPriority
         break
       }
       case "dueDate": {
@@ -117,17 +116,12 @@ export const promptForUpdateTodo = () =>
           message: "Enter due date (YYYY-MM-DD):",
           default: selectedTodo.dueDate?.toISOString().split("T")[0] || ""
         })
-        changes.dueDate = new Date(newDueDate)
+        args.dueDate = newDueDate
         break
       }
     }
 
-    const updatedTodo = yield* updateTodo({
-      id: selectedTodoId,
-      changes
-    })
-
-    yield* Console.log(`Todo updated successfully: ${updatedTodo.title}`)
+    yield* updateTodoWithArgs(args)
   })
 
 export const promptForRemoveTodos = () =>
@@ -154,14 +148,9 @@ export const promptForRemoveTodos = () =>
       return
     }
 
-    const selectedTodos = todos.filter((todo) => selectedTodoIds.includes(todo.id))
-
-    yield* Console.log(`\nRemoving ${selectedTodos.length} todos:`)
-    yield* Effect.forEach(selectedTodos, (todo) => Console.log(`- ${todo.title}`))
-    yield* removeTodos({
+    yield* removeTodosWithArgs({
       ids: selectedTodoIds
     })
-    yield* Console.log(`${selectedTodos.length} todos removed successfully.`)
   })
 
 export const promptForCompleteTodos = () =>
@@ -188,16 +177,9 @@ export const promptForCompleteTodos = () =>
       return
     }
 
-    const selectedTodos = todos.filter((todo) => selectedTodoIds.includes(todo.id))
-
-    yield* Effect.forEach(selectedTodos, (todo) =>
-      updateTodo({
-        id: todo.id,
-        changes: { status: "completed" }
-      })
-    )
-
-    yield* Console.log(`${selectedTodos.length} todos completed successfully.`)
+    yield* completeTodosWithArgs({
+      ids: selectedTodoIds
+    })
   })
 
 export const promptForSwitchDatabase = () =>
@@ -211,7 +193,7 @@ export const promptForSwitchDatabase = () =>
       ]
     })
 
-    const config: any = { type: providerType }
+    let filePath: string | undefined
 
     if (providerType === "json" || providerType === "markdown") {
       const useCustomPath = yield* Prompt.confirm({
@@ -221,15 +203,17 @@ export const promptForSwitchDatabase = () =>
 
       if (useCustomPath) {
         const extension = providerType === "json" ? "json" : "md"
-        const filePath = yield* Prompt.text({
+        filePath = yield* Prompt.text({
           message: `Enter file path for ${providerType} database:`,
           default: `~/todos.${extension}`
         })
-        config.filePath = filePath
       }
     }
 
-    yield* switchDatabase(config)
+    yield* switchDatabaseWithArgs({
+      provider: providerType,
+      filePath
+    })
   })
 
 export const promptForSyncTodos = () =>
@@ -256,7 +240,7 @@ export const promptForSyncTodos = () =>
       choices: availableChoices
     })
 
-    const targetConfig: any = { type: targetProviderType }
+    let targetFilePath: string | undefined
 
     if (targetProviderType === "json" || targetProviderType === "markdown") {
       const useCustomPath = yield* Prompt.confirm({
@@ -286,9 +270,12 @@ export const promptForSyncTodos = () =>
           break
         }
 
-        targetConfig.filePath = filePath
+        targetFilePath = filePath
       }
     }
 
-    yield* syncCurrentWithDatabase(targetConfig)
+    yield* syncDatabaseWithArgs({
+      targetProvider: targetProviderType,
+      targetFilePath
+    })
   })
