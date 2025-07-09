@@ -1,12 +1,15 @@
 {
-  "name": "@template/cli",
-  "version": "0.0.0",
+  "name": "todo-cli",
+  "version": "0.0.1",
   "type": "module",
   "license": "MIT",
   "description": "A basic Effect CLI application",
   "repository": {
     "type": "git",
-    "url": "<PLACEHOLDER>"
+    "url": "https://github.com/MichaelVessia/todo-cli.git"
+  },
+  "bin": {
+    "todo-cli": "./dist/bin.js"
   },
   "publishConfig": {
     "access": "public",

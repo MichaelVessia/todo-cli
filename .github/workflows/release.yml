@@ -2,8 +2,8 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - master
   workflow_dispatch:
 
 permissions:
@@ -16,16 +16,43 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Install dependencies
         uses: ./.github/actions/setup
+
       - name: Build package
         run: bun run build
+
+      - name: Run tests
+        run: bun test
+
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: bun run changeset-version
+          publish: bun run changeset-publish
+          commit: "chore: release packages"
+          title: "chore: release packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Create single file executable
+        if: steps.changesets.outputs.published == 'true'
         run: bun build --compile --outfile=todo-cli ./src/bin.ts
-      - name: Create release
+
+      - name: Create GitHub release
+        if: steps.changesets.outputs.published == 'true'
         uses: softprops/action-gh-release@v1
         with:
           files: |
             todo-cli
+          tag_name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          body: |
+            See [CHANGELOG.md](https://github.com/MichaelVessia/todo-cli/blob/master/CHANGELOG.md) for details.
           draft: false
           prerelease: false
