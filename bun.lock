@@ -5,6 +5,8 @@
       "name": "@template/cli",
       "dependencies": {
         "@effect/schema": "^0.75.5",
+        "@effect/sql": "^0.40.12",
+        "@effect/sql-sqlite-bun": "^0.41.12",
       },
       "devDependencies": {
         "@biomejs/biome": "^2.1.1",
@@ -19,6 +21,9 @@
         "effect": "latest",
       },
     },
+  },
+  "patchedDependencies": {
+    "@changesets/get-github-info@0.6.0": "patches/@changesets__get-github-info@0.6.0.patch",
   },
   "packages": {
     "@babel/runtime": ["@babel/runtime@7.27.6", "", {}, "sha512-vbavdySgbTTrmFE+EsiqUTzlOr5bzlnJtUv9PynGCAKvfQqjIXbvFdumPM/GxMDfyuGMJaJAU6TO4zc1Jf1i8Q=="],
@@ -101,7 +106,9 @@
 
     "@effect/schema": ["@effect/schema@0.75.5", "", { "dependencies": { "fast-check": "^3.21.0" }, "peerDependencies": { "effect": "^3.9.2" } }, "sha512-TQInulTVCuF+9EIbJpyLP6dvxbQJMphrnRqgexm/Ze39rSjfhJuufF7XvU3SxTgg3HnL7B/kpORTJbHhlE6thw=="],
 
-    "@effect/sql": ["@effect/sql@0.40.11", "", { "dependencies": { "@opentelemetry/semantic-conventions": "^1.33.0", "uuid": "^11.0.3" }, "peerDependencies": { "@effect/experimental": "^0.51.11", "@effect/platform": "^0.87.10", "effect": "^3.16.12" } }, "sha512-5Ys/OQEmBq6z3MJKa3W803rp9p1yni0ISDKSuKH1lhgdR8FWSMRWLe42s9stJHijvMvvoCUPO+MZjZ6m1UAFdg=="],
+    "@effect/sql": ["@effect/sql@0.40.12", "", { "dependencies": { "@opentelemetry/semantic-conventions": "^1.33.0", "uuid": "^11.0.3" }, "peerDependencies": { "@effect/experimental": "^0.51.12", "@effect/platform": "^0.87.11", "effect": "^3.16.12" } }, "sha512-IzXOAcft/aAsEVgat/PKe6b5/WvKbfI3V7fC5Un9cn0880HbUO4q2+hTWSTrWX/33l/6yqXMBKDOG+QUSHhSYA=="],
+
+    "@effect/sql-sqlite-bun": ["@effect/sql-sqlite-bun@0.41.12", "", { "dependencies": { "@opentelemetry/semantic-conventions": "^1.33.0" }, "peerDependencies": { "@effect/experimental": "^0.51.12", "@effect/platform": "^0.87.11", "@effect/sql": "^0.40.12", "effect": "^3.16.12" } }, "sha512-KzYEvcaH9e7QeIqd02QHfWlOJsuobsIQPVTOpjA8rVVsorLzt1dztBXSshBcSQrmIXQ6PRLOtTSie8T0nKZ0Og=="],
 
     "@effect/typeclass": ["@effect/typeclass@0.35.12", "", { "peerDependencies": { "effect": "^3.16.12" } }, "sha512-a0s0MisQnt+dvWXg5W/IFrc6zUScAd6wWrektcGXuIrIo+W2sDn0qLshlEbgI6UhBWMD/kbUA/PhIszXhVddtQ=="],
 

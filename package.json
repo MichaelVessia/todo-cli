@@ -36,7 +36,9 @@
     "effect": "latest"
   },
   "dependencies": {
-    "@effect/schema": "^0.75.5"
+    "@effect/schema": "^0.75.5",
+    "@effect/sql": "^0.40.12",
+    "@effect/sql-sqlite-bun": "^0.41.12"
   },
   "patchedDependencies": {
     "@changesets/get-github-info@0.6.0": "patches/@changesets__get-github-info@0.6.0.patch"

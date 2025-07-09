@@ -2,13 +2,12 @@ import * as Command from "@effect/cli/Command"
 import * as Prompt from "@effect/cli/Prompt"
 import { Console, Effect } from "effect"
 import { TodoRepositoryLayer } from "../infra/layers/TodoRepositoryLayer.js"
-import { addCommand, completeCommand, listCommand, removeCommand, switchCommand, updateCommand } from "./commands.js"
+import { addCommand, completeCommand, listCommand, removeCommand, updateCommand } from "./commands.js"
 import {
   promptForAddTodo,
   promptForCompleteTodos,
   promptForListTodos,
   promptForRemoveTodos,
-  promptForSwitchDatabase,
   promptForUpdateTodo
 } from "./prompts.js"
 
@@ -21,8 +20,7 @@ const interactiveCommand = Command.make("todo", {}, () =>
         { title: "List all todos", value: "list" },
         { title: "Update a todo", value: "update" },
         { title: "Remove todos", value: "remove" },
-        { title: "Complete a todo", value: "complete" },
-        { title: "Switch database", value: "switch" }
+        { title: "Complete a todo", value: "complete" }
       ]
     })
 
@@ -46,10 +44,6 @@ const interactiveCommand = Command.make("todo", {}, () =>
       case "complete":
         yield* promptForCompleteTodos()
         break
-
-      case "switch":
-        yield* promptForSwitchDatabase()
-        break
     }
   }).pipe(
     Effect.provide(TodoRepositoryLayer),
@@ -58,7 +52,7 @@ const interactiveCommand = Command.make("todo", {}, () =>
 )
 
 const command = interactiveCommand.pipe(
-  Command.withSubcommands([addCommand, listCommand, updateCommand, removeCommand, completeCommand, switchCommand])
+  Command.withSubcommands([addCommand, listCommand, updateCommand, removeCommand, completeCommand])
 )
 
 export const run = Command.run(command, {

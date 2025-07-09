@@ -36,16 +36,6 @@ bun src/bin.ts remove --id "todo-id1" --id "todo-id2"
 bun src/bin.ts complete --id "todo-id1" --id "todo-id2"
 ```
 
-### Switch Database
-```bash
-bun src/bin.ts switch --provider json --file-path "./todos.json"
-```
-
-### Sync Databases
-```bash
-bun src/bin.ts sync --target-provider markdown --target-path "./todos.md"
-```
-
 Note: All commands also support interactive mode when arguments are omitted.
 
 ## Scripts

@@ -8,16 +8,9 @@ import {
   completeTodosWithArgs,
   listTodosWithArgs,
   removeTodosWithArgs,
-  switchDatabaseWithArgs,
   updateTodoWithArgs
 } from "./core-handlers.js"
-import {
-  promptForAddTodo,
-  promptForCompleteTodos,
-  promptForRemoveTodos,
-  promptForSwitchDatabase,
-  promptForUpdateTodo
-} from "./prompts.js"
+import { promptForAddTodo, promptForCompleteTodos, promptForRemoveTodos, promptForUpdateTodo } from "./prompts.js"
 
 const addTitle = Options.text("title").pipe(Options.withAlias("t"), Options.optional)
 const addDescription = Options.text("description").pipe(Options.withAlias("d"), Options.optional)
@@ -136,33 +129,6 @@ export const completeCommand = Command.make(
       )
     } else {
       return promptForCompleteTodos().pipe(
-        Effect.provide(TodoRepositoryLayer),
-        Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-      )
-    }
-  }
-)
-
-const switchProvider = Options.choice("provider", ["json", "markdown"] as const).pipe(Options.optional)
-const switchFilePath = Options.text("file-path").pipe(Options.optional)
-
-export const switchCommand = Command.make(
-  "switch",
-  {
-    provider: switchProvider,
-    filePath: switchFilePath
-  },
-  (args) => {
-    if (args.provider._tag === "Some") {
-      return switchDatabaseWithArgs({
-        provider: args.provider.value,
-        filePath: args.filePath._tag === "Some" ? args.filePath.value : undefined
-      }).pipe(
-        Effect.provide(TodoRepositoryLayer),
-        Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-      )
-    } else {
-      return promptForSwitchDatabase().pipe(
         Effect.provide(TodoRepositoryLayer),
         Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
       )

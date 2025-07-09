@@ -1,5 +1,4 @@
 import { Schema } from "@effect/schema"
-import { Brand } from "effect"
 
 const TodoIdBrand = Symbol.for("TodoId")
 
@@ -40,5 +39,5 @@ export const TodoId = {
     (b: TodoId): boolean =>
       a === b,
 
-  toString: (id: TodoId): string => Brand.nominal<TodoId>()(id)
+  toString: (id: TodoId): string => id as string
 }

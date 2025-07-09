@@ -1,10 +1,8 @@
 import { Console, Effect } from "effect"
 import { type PRIORITY_ARRAY, PRIORITY_VALUES } from "../domain/todo/PriorityConstants.js"
-import { configManager } from "../infra/config/ConfigManager.js"
 import { type AddTodoCommand, addTodo } from "../operations/AddTodo.js"
 import { getTodos } from "../operations/ListTodos.js"
 import { removeTodos } from "../operations/RemoveTodo.js"
-import { syncCurrentWithDatabase } from "../operations/SyncTodos.js"
 import type { UpdateTodoCommand } from "../operations/UpdateTodo.js"
 import { updateTodo } from "../operations/UpdateTodo.js"
 
@@ -29,11 +27,6 @@ export interface RemoveTodoArgs {
 
 export interface CompleteTodoArgs {
   ids: string[]
-}
-
-export interface SwitchDatabaseArgs {
-  provider: "json" | "markdown"
-  filePath?: string
 }
 
 export const addTodoWithArgs = (args: AddTodoArgs) =>
@@ -66,7 +59,10 @@ export const listTodosWithArgs = () =>
       yield* Console.log("No todos found!")
       return []
     }
-    yield* Effect.forEach(todos, (todo) => Console.log(`${todo.title}, ${todo.status}`))
+    yield* Effect.forEach(todos, (todo) => {
+      const priorityEmoji = todo.priority === "high" ? "🔴 " : todo.priority === "medium" ? "🟡 " : "🟢 "
+      return Console.log(`${priorityEmoji}${todo.title}, ${todo.status}`)
+    })
     return todos
   })
 
@@ -143,26 +139,4 @@ export const completeTodosWithArgs = (args: CompleteTodoArgs) =>
     )
 
     yield* Console.log(`${selectedTodos.length} todos completed successfully.`)
-  })
-
-export const switchDatabaseWithArgs = (args: SwitchDatabaseArgs) =>
-  Effect.gen(function* () {
-    const currentConfig = yield* configManager.getDataProviderConfig()
-
-    if (currentConfig.type === args.provider) {
-      const currentFilePath = "filePath" in currentConfig ? currentConfig.filePath : undefined
-      if (currentFilePath === args.filePath) {
-        yield* Console.log("Target database is the same as current database.")
-        return
-      }
-    }
-
-    const targetConfig: any = { type: args.provider }
-
-    if (args.filePath && (args.provider === "json" || args.provider === "markdown")) {
-      targetConfig.filePath = args.filePath
-    }
-
-    yield* syncCurrentWithDatabase(targetConfig)
-    yield* Console.log(`Synced with ${args.provider} database${args.filePath ? ` at ${args.filePath}` : ""}`)
   })

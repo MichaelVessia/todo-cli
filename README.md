@@ -10,7 +10,7 @@ A modern command-line todo application built with TypeScript and Effect, featuri
 - **Status Tracking**: Pending, in-progress, and completed status states
 - **Due Dates**: Optional due date support with overdue detection
 - **Bulk Operations**: Multi-select for removing and completing multiple todos
-- **Data Persistence**: Multiple storage formats (Markdown, JSON, Memory) with configurable paths
+- **Data Persistence**: SQLite database for reliable local storage
 - **Schema Validation**: Runtime validation using Effect Schema
 - **Error Handling**: Comprehensive error handling with custom error types
 
@@ -49,92 +49,24 @@ todo-cli complete # Complete todos
 
 ## Data Storage
 
-The application supports multiple storage formats that can be configured via environment variables.
+The application uses SQLite for data persistence, providing reliable local storage with ACID compliance.
 
-### Storage Formats
+### Database Location
 
-#### Markdown (Default)
-Human-readable format stored at `~/.todo-cli/todos.md`:
-
-```markdown
-# Todo List
-
-## Pending
-
-- [ ] 🟡 Example task
-  <!-- id: abc123, priority: medium, created: 2024-01-01T10:00:00Z, updated: 2024-01-01T10:00:00Z -->
-  Task description here
-
-## In Progress
-
-- [ ] 🔴 Important task
-  <!-- id: def456, priority: high, created: 2024-01-01T11:00:00Z, updated: 2024-01-01T11:30:00Z -->
-
-## Completed
-
-- [x] 🟢 Completed task
-  <!-- id: ghi789, priority: low, created: 2024-01-01T09:00:00Z, updated: 2024-01-01T12:00:00Z -->
-```
-
-#### JSON
-Structured format stored at `~/.todo-cli/todos.json`:
-
-```json
-[
-  {
-    "id": "unique-id",
-    "title": "Todo title",
-    "description": "Optional description",
-    "status": "pending",
-    "priority": "medium",
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z",
-    "dueDate": "2024-01-02T00:00:00.000Z"
-  }
-]
-```
-
-#### Memory
-Temporary in-memory storage (data lost on application exit).
+By default, the SQLite database is stored at `~/.todo-cli/todos.db`.
 
 ### Configuration
 
-Configure storage format using environment variables:
+You can customize the database location using an environment variable:
 
 ```bash
-# Use Markdown format (default)
-export TODO_PROVIDER_TYPE=markdown
-export TODO_MARKDOWN_FILE_PATH=/path/to/todos.md  # optional
-
-# Use JSON format
-export TODO_PROVIDER_TYPE=json
-export TODO_JSON_FILE_PATH=/path/to/todos.json    # optional
-
-# Use Memory format
-export TODO_PROVIDER_TYPE=memory
+# Use custom database path
+export TODO_DB_PATH=/path/to/todos.db
 ```
 
-### Switching Between Formats
+### Data Migration
 
-To switch from one format to another:
-
-1. **Export existing data** (if needed):
-   ```bash
-   # Copy your current todos file before switching
-   cp ~/.todo-cli/todos.md ~/.todo-cli/todos.md.backup
-   ```
-
-2. **Set environment variable**:
-   ```bash
-   export TODO_PROVIDER_TYPE=json  # or markdown, memory
-   ```
-
-3. **Run the application**:
-   ```bash
-   todo-cli
-   ```
-
-Note: Data is not automatically migrated between formats. You'll need to manually recreate todos when switching formats, or implement a migration script if needed.
+If you're upgrading from a previous version that used JSON or Markdown storage, you'll need to manually migrate your todos to the new SQLite database. The old storage formats are no longer supported.
 
 ## Development
 
@@ -176,7 +108,7 @@ This should be done before committing any changes.
 The application follows a clean architecture pattern:
 
 - **Domain Layer** (`src/domain/`): Core entities, repository interfaces, and business logic
-- **Infrastructure Layer** (`src/infra/`): Data persistence implementation
+- **Infrastructure Layer** (`src/infra/`): SQLite persistence implementation
 - **Operations Layer** (`src/operations/`): Business operations and use cases
 - **CLI Layer** (`src/cli/`): User interface and command handling
 

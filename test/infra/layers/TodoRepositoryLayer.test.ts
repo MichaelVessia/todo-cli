@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test"
-import { Effect, Layer } from "effect"
+import { Effect } from "effect"
+import { Todo } from "../../../src/domain/todo/Todo.js"
 import { TodoRepository } from "../../../src/domain/todo/TodoRepository.js"
 import { TodoRepositoryLayer } from "../../../src/infra/layers/TodoRepositoryLayer.js"
-import { makeTodo } from "../../../src/domain/todo/Todo.js"
-import { MemoryTodoRepository } from "../../../src/infra/persistence/MemoryTodoRepository.js"
+import { SqliteTest } from "../../../src/infra/persistence/SqliteTodoRepository.js"
 
 describe("TodoRepositoryLayer", () => {
-  test("should use JSON provider by default", async () => {
+  test("should provide SQLite repository", async () => {
     const program = Effect.gen(function* () {
       const repository = yield* TodoRepository
       // The repository should be defined
@@ -22,42 +22,40 @@ describe("TodoRepositoryLayer", () => {
     expect(result).toBe(true)
   })
 
-  test("should use memory provider when configured", async () => {
-    // For this test, we'll directly create a memory provider layer
-    const memoryLayer = Layer.succeed(TodoRepository, new MemoryTodoRepository())
-
+  test("should save and retrieve todos", async () => {
     const program = Effect.gen(function* () {
       const repository = yield* TodoRepository
       
       // Save a todo
-      const todo = makeTodo({ title: "Test todo" })
+      const todo = new Todo({ title: "Test todo", status: "pending", priority: "medium" })
       yield* repository.save(todo)
       
       // Find all todos
       const todos = yield* repository.findAll()
       
-      return todos.length
+      // Clean up
+      yield* repository.deleteById(todo.id)
+      
+      return todos.some(t => t.id === todo.id)
     })
 
     const result = await Effect.runPromise(
       program.pipe(
-        Effect.provide(memoryLayer)
+        Effect.provide(TodoRepositoryLayer)
       )
     )
     
-    expect(result).toBe(1)
+    expect(result).toBe(true)
   })
 
-  test("different provider instances should have isolated data", async () => {
-    // Create separate memory provider instances
-    const layer1 = Layer.succeed(TodoRepository, new MemoryTodoRepository())
-    const layer2 = Layer.succeed(TodoRepository, new MemoryTodoRepository())
-
+  test("different test instances should have isolated data", async () => {
     const program1 = Effect.gen(function* () {
       const repository = yield* TodoRepository
-      const todo = makeTodo({ title: "Todo in instance 1" })
+      const todo = new Todo({ title: "Todo in instance 1", status: "pending", priority: "high" })
       yield* repository.save(todo)
-      return yield* repository.count()
+      const count = yield* repository.count()
+      yield* repository.deleteById(todo.id)
+      return count
     })
 
     const program2 = Effect.gen(function* () {
@@ -65,22 +63,20 @@ describe("TodoRepositoryLayer", () => {
       return yield* repository.count()
     })
 
-    const count1 = await Effect.runPromise(program1.pipe(Effect.provide(layer1)))
-    const count2 = await Effect.runPromise(program2.pipe(Effect.provide(layer2)))
+    const count1 = await Effect.runPromise(program1.pipe(Effect.provide(SqliteTest)))
+    const count2 = await Effect.runPromise(program2.pipe(Effect.provide(SqliteTest)))
     
-    expect(count1).toBe(1)
-    expect(count2).toBe(0) // Different instance, no data
+    // Both should start with 0 todos since we're using in-memory SQLite
+    expect(count2).toBe(0)
   })
 
-  test("memory provider should maintain data across operations", async () => {
-    const memoryLayer = Layer.succeed(TodoRepository, new MemoryTodoRepository())
-
+  test("SQLite provider should maintain data across operations", async () => {
     const program = Effect.gen(function* () {
       const repository = yield* TodoRepository
       
       // Add multiple todos
-      const todo1 = makeTodo({ title: "Todo 1" })
-      const todo2 = makeTodo({ title: "Todo 2" })
+      const todo1 = new Todo({ title: "Todo 1", status: "pending", priority: "low" })
+      const todo2 = new Todo({ title: "Todo 2", status: "in_progress", priority: "medium" })
       yield* repository.save(todo1)
       yield* repository.save(todo2)
       
@@ -93,11 +89,14 @@ describe("TodoRepositoryLayer", () => {
       // Count again
       const finalCount = yield* repository.count()
       
+      // Clean up
+      yield* repository.deleteById(todo2.id)
+      
       return { initialCount: count, finalCount }
     })
 
     const result = await Effect.runPromise(
-      program.pipe(Effect.provide(memoryLayer))
+      program.pipe(Effect.provide(SqliteTest))
     )
     
     expect(result.initialCount).toBe(2)

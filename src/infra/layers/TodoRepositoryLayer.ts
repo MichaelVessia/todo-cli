@@ -2,77 +2,33 @@ import * as os from "node:os"
 import * as path from "node:path"
 import { FileSystem } from "@effect/platform"
 import { BunFileSystem } from "@effect/platform-bun"
-import { ConfigProvider, Effect, Layer } from "effect"
+import { Config, Effect, Layer } from "effect"
 import { TodoRepositoryError } from "../../domain/todo/TodoErrors.js"
-import { TodoRepository } from "../../domain/todo/TodoRepository.js"
-import { configManager } from "../config/ConfigManager.js"
-import { type DataProviderConfig, loadDataProviderConfig } from "../config/DataProviderConfig.js"
-import { make as makeJsonTodoRepository } from "../persistence/JsonTodoRepository.js"
-import { make as makeMarkdownTodoRepository } from "../persistence/MarkdownTodoRepository.js"
-import { make as makeMemoryTodoRepository } from "../persistence/MemoryTodoRepository.js"
+import { SqliteLive } from "../persistence/SqliteTodoRepository.js"
 
 const TODO_DIR = path.join(os.homedir(), ".todo-cli")
-const DEFAULT_JSON_FILE_PATH = path.join(TODO_DIR, "todos.json")
-const DEFAULT_MARKDOWN_FILE_PATH = path.join(TODO_DIR, "todos.md")
+const DEFAULT_DB_PATH = path.join(TODO_DIR, "todos.db")
 
-const createRepository = (
-  config: DataProviderConfig
-): Effect.Effect<TodoRepository, TodoRepositoryError, FileSystem.FileSystem> =>
+const ensureDirectoryExists = (dbPath: string): Effect.Effect<void, TodoRepositoryError, FileSystem.FileSystem> =>
   Effect.gen(function* () {
-    switch (config.type) {
-      case "json": {
-        const fs = yield* FileSystem.FileSystem
-        const filePath = config.filePath || DEFAULT_JSON_FILE_PATH
-        const dir = path.dirname(filePath)
+    const fs = yield* FileSystem.FileSystem
+    const dir = path.dirname(dbPath)
 
-        const dirExists = yield* fs
-          .exists(dir)
-          .pipe(Effect.mapError((error) => new TodoRepositoryError({ cause: error })))
-        if (!dirExists) {
-          yield* fs
-            .makeDirectory(dir, { recursive: true })
-            .pipe(Effect.mapError((error) => new TodoRepositoryError({ cause: error })))
-        }
+    const dirExists = yield* fs.exists(dir).pipe(Effect.mapError((error) => new TodoRepositoryError({ cause: error })))
 
-        return makeJsonTodoRepository(filePath)
-      }
-
-      case "memory": {
-        return makeMemoryTodoRepository()
-      }
-
-      case "markdown": {
-        const fs = yield* FileSystem.FileSystem
-        const filePath = config.filePath || DEFAULT_MARKDOWN_FILE_PATH
-        const dir = path.dirname(filePath)
-
-        const dirExists = yield* fs
-          .exists(dir)
-          .pipe(Effect.mapError((error) => new TodoRepositoryError({ cause: error })))
-        if (!dirExists) {
-          yield* fs
-            .makeDirectory(dir, { recursive: true })
-            .pipe(Effect.mapError((error) => new TodoRepositoryError({ cause: error })))
-        }
-
-        return makeMarkdownTodoRepository(filePath)
-      }
+    if (!dirExists) {
+      yield* fs
+        .makeDirectory(dir, { recursive: true })
+        .pipe(Effect.mapError((error) => new TodoRepositoryError({ cause: error })))
     }
   })
 
-export const TodoRepositoryLayer = Layer.effect(
-  TodoRepository,
-  Effect.gen(function* () {
-    // Try to load from config file first, fallback to environment variables
-    const configFromFile = yield* Effect.either(configManager.getDataProviderConfig())
+const loadDatabasePath = Config.withDefault(Config.string("TODO_DB_PATH"), DEFAULT_DB_PATH)
 
-    if (configFromFile._tag === "Right") {
-      // Config file exists and was loaded successfully
-      return yield* createRepository(configFromFile.right)
-    } else {
-      // Fallback to environment variables
-      const config = yield* loadDataProviderConfig.pipe(Effect.withConfigProvider(ConfigProvider.fromEnv()))
-      return yield* createRepository(config)
-    }
+export const TodoRepositoryLayer = Layer.unwrapEffect(
+  Effect.gen(function* () {
+    const dbPath = yield* loadDatabasePath
+    yield* ensureDirectoryExists(dbPath).pipe(Effect.provide(BunFileSystem.layer))
+    return SqliteLive(dbPath)
   })
-).pipe(Layer.provide(BunFileSystem.layer))
+)
