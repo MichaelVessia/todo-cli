@@ -1,6 +1,6 @@
 {
-  "name": "todo-cli",
-  "version": "0.0.1",
+  "name": "@michaelvessia/todo-cli",
+  "version": "0.0.2",
   "type": "module",
   "license": "MIT",
   "description": "A basic Effect CLI application",
@@ -12,6 +12,7 @@
     "todo-cli": "./dist/bin.js"
   },
   "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
     "access": "public",
     "directory": "dist"
   },
