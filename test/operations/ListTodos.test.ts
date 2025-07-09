@@ -52,7 +52,7 @@ describe("ListTodos", () => {
       )
 
       expect(result).toHaveLength(3)
-      
+
       const statuses = result.map(todo => todo.status)
       expect(statuses).toContain("pending")
       expect(statuses).toContain("completed")
@@ -71,7 +71,7 @@ describe("ListTodos", () => {
       )
 
       expect(result).toHaveLength(3)
-      
+
       const priorities = result.map(todo => todo.priority)
       expect(priorities).toContain("high")
       expect(priorities).toContain("medium")
@@ -79,20 +79,20 @@ describe("ListTodos", () => {
     })
 
     test("should return todos with optional fields", async () => {
-      const todoWithDescription = makeTodo({ 
-        title: "Todo with description", 
+      const todoWithDescription = makeTodo({
+        title: "Todo with description",
         description: "This todo has a description",
         priority: "medium"
       })
-      
-      const todoWithDueDate = makeTodo({ 
-        title: "Todo with due date", 
+
+      const todoWithDueDate = makeTodo({
+        title: "Todo with due date",
         dueDate: new Date("2024-12-31"),
         priority: "high"
       })
 
-      const todoWithBoth = makeTodo({ 
-        title: "Todo with both", 
+      const todoWithBoth = makeTodo({
+        title: "Todo with both",
         description: "Has both description and due date",
         dueDate: new Date("2024-06-15"),
         priority: "low"
@@ -105,20 +105,20 @@ describe("ListTodos", () => {
       )
 
       expect(result).toHaveLength(3)
-      
+
       const todoWithDescriptionResult = result.find(t => t.title === "Todo with description")
       expect(todoWithDescriptionResult?.description).toBe("This todo has a description")
-      
+
       const todoWithDueDateResult = result.find(t => t.title === "Todo with due date")
       expect(todoWithDueDateResult?.dueDate).toEqual(new Date("2024-12-31"))
-      
+
       const todoWithBothResult = result.find(t => t.title === "Todo with both")
       expect(todoWithBothResult?.description).toBe("Has both description and due date")
       expect(todoWithBothResult?.dueDate).toEqual(new Date("2024-06-15"))
     })
 
     test("should preserve todo properties", async () => {
-      const originalTodo = makeTodo({ 
+      const originalTodo = makeTodo({
         title: "Original Todo",
         description: "Original description",
         priority: "high",
@@ -133,7 +133,7 @@ describe("ListTodos", () => {
 
       expect(result).toHaveLength(1)
       const retrievedTodo = result[0]
-      
+
       expect(retrievedTodo.id).toEqual(originalTodo.id)
       expect(retrievedTodo.title).toBe(originalTodo.title)
       expect(retrievedTodo.description).toBe(originalTodo.description)
