@@ -45,5 +45,8 @@ export const switchCommand = Command.make("switch", {}, () =>
 )
 
 export const syncCommand = Command.make("sync", {}, () =>
-  promptForSyncTodos().pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
+  promptForSyncTodos().pipe(
+    Effect.provide(TodoRepositoryLayer),
+    Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
+  )
 )

@@ -1,6 +1,7 @@
 import * as Prompt from "@effect/cli/Prompt"
 import { Console, Effect } from "effect"
 import { PRIORITY_CHOICES } from "../domain/todo/PriorityConstants.js"
+import { configManager } from "../infra/config/ConfigManager.js"
 import { type AddTodoCommand, addTodo } from "../operations/AddTodo.js"
 import { getTodos } from "../operations/ListTodos.js"
 import { removeTodos } from "../operations/RemoveTodo.js"
@@ -233,13 +234,26 @@ export const promptForSwitchDatabase = () =>
 
 export const promptForSyncTodos = () =>
   Effect.gen(function* () {
+    const currentConfig = yield* configManager.getDataProviderConfig()
+
+    const allChoices = [
+      { title: "JSON File", value: "json" },
+      { title: "Markdown File", value: "markdown" },
+      { title: "Memory (temporary)", value: "memory" }
+    ]
+
+    // Filter out current database type from choices
+    const availableChoices = allChoices.filter((choice) => choice.value !== currentConfig.type)
+
+    if (availableChoices.length === 0) {
+      yield* Console.log("No other database types available for sync")
+      return
+    }
+
     const targetProviderType = yield* Prompt.select({
-      message: "Select target database to sync with:",
-      choices: [
-        { title: "JSON File", value: "json" },
-        { title: "Markdown File", value: "markdown" },
-        { title: "Memory (temporary)", value: "memory" }
-      ]
+      message:
+        "Select target database to merge with (both databases will be updated with merged todos, then switched to target):",
+      choices: availableChoices
     })
 
     const targetConfig: any = { type: targetProviderType }
@@ -252,10 +266,26 @@ export const promptForSyncTodos = () =>
 
       if (useCustomPath) {
         const extension = targetProviderType === "json" ? "json" : "md"
-        const filePath = yield* Prompt.text({
-          message: `Enter file path for ${targetProviderType} database:`,
-          default: `~/todos.${extension}`
-        })
+        let filePath: string
+
+        // Keep asking for file path until they provide a different one
+        while (true) {
+          filePath = yield* Prompt.text({
+            message: `Enter file path for ${targetProviderType} database:`,
+            default: `~/todos.${extension}`
+          })
+
+          // Check if this would result in the same database
+          const currentFilePath = "filePath" in currentConfig ? currentConfig.filePath : undefined
+
+          if (currentConfig.type === targetProviderType && currentFilePath === filePath) {
+            yield* Console.log("That file path is the same as your current database. Please choose a different path.")
+            continue
+          }
+
+          break
+        }
+
         targetConfig.filePath = filePath
       }
     }
