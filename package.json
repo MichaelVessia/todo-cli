@@ -6,7 +6,7 @@
   "description": "A basic Effect CLI application",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MichaelVessia/todo-cli.git"
+    "url": "git+https://github.com/MichaelVessia/todo-cli.git"
   },
   "bin": {
     "todo-cli": "./dist/bin.js"
@@ -16,7 +16,7 @@
     "directory": "dist"
   },
   "scripts": {
-    "build": "bun build ./src/bin.ts --outdir=./dist --target=bun",
+    "build": "bun build ./src/bin.ts --outdir=./dist --target=bun && cp package.json README.md LICENSE dist/ && sed -i 's|\"./dist/bin.js\"|\"./bin.js\"|' dist/package.json",
     "clean": "rm -rf dist/*",
     "check": "biome check src && biome format src && bun test --typecheck",
     "lint": "biome check src",
