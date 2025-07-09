@@ -11,11 +11,6 @@
   "bin": {
     "todo-cli": "./dist/bin.js"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "public",
-    "directory": "dist"
-  },
   "scripts": {
     "build": "bun build ./src/bin.ts --outdir=./dist --target=bun && cp package.json README.md LICENSE dist/ && sed -i 's|\"./dist/bin.js\"|\"./bin.js\"|' dist/package.json",
     "clean": "rm -rf dist/*",
@@ -26,7 +21,7 @@
     "test": "bun test",
     "coverage": "bun test --coverage",
     "changeset-version": "changeset version",
-    "changeset-publish": "bun run build && bun test && changeset publish"
+    "changeset-publish": "bun run build && bun test"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.1",

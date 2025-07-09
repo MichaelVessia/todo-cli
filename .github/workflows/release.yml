@@ -28,7 +28,7 @@ jobs:
       - name: Run tests
         run: bun test
 
-      - name: Create Release Pull Request or Publish
+      - name: Create Release Pull Request or Tag
         id: changesets
         uses: changesets/action@v1
         with:
@@ -36,9 +36,9 @@ jobs:
           publish: bun run changeset-publish
           commit: "chore: release packages"
           title: "chore: release packages"
+          createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create single file executable
         if: steps.changesets.outputs.published == 'true'
