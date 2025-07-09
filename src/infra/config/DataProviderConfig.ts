@@ -1,6 +1,6 @@
 import { Config, Schema } from "effect"
 
-export const DataProviderType = Schema.Literal("json", "memory", "sqlite", "postgres")
+export const DataProviderType = Schema.Literal("json", "memory", "markdown")
 export type DataProviderType = Schema.Schema.Type<typeof DataProviderType>
 
 export const JsonProviderConfig = Schema.Struct({
@@ -14,28 +14,17 @@ export const MemoryProviderConfig = Schema.Struct({
 })
 export type MemoryProviderConfig = Schema.Schema.Type<typeof MemoryProviderConfig>
 
-export const SqliteProviderConfig = Schema.Struct({
-  type: Schema.Literal("sqlite"),
-  databasePath: Schema.String
+export const MarkdownProviderConfig = Schema.Struct({
+  type: Schema.Literal("markdown"),
+  filePath: Schema.optional(Schema.String)
 })
-export type SqliteProviderConfig = Schema.Schema.Type<typeof SqliteProviderConfig>
+export type MarkdownProviderConfig = Schema.Schema.Type<typeof MarkdownProviderConfig>
 
-export const PostgresProviderConfig = Schema.Struct({
-  type: Schema.Literal("postgres"),
-  connectionString: Schema.String
-})
-export type PostgresProviderConfig = Schema.Schema.Type<typeof PostgresProviderConfig>
-
-export const DataProviderConfig = Schema.Union(
-  JsonProviderConfig,
-  MemoryProviderConfig,
-  SqliteProviderConfig,
-  PostgresProviderConfig
-)
+export const DataProviderConfig = Schema.Union(JsonProviderConfig, MemoryProviderConfig, MarkdownProviderConfig)
 export type DataProviderConfig = Schema.Schema.Type<typeof DataProviderConfig>
 
 export const DEFAULT_PROVIDER_CONFIG: DataProviderConfig = {
-  type: "json"
+  type: "markdown"
 }
 
 export const loadDataProviderConfig = Config.map(
@@ -45,16 +34,15 @@ export const loadDataProviderConfig = Config.map(
         Config.validate({
           message: "Invalid provider type",
           validation: (value: string): value is DataProviderType =>
-            value === "json" || value === "memory" || value === "sqlite" || value === "postgres"
+            value === "json" || value === "memory" || value === "markdown"
         })
       ),
-      "json" as const
+      "markdown" as const
     ),
     jsonFilePath: Config.option(Config.string("TODO_JSON_FILE_PATH")),
-    sqliteDatabasePath: Config.option(Config.string("TODO_SQLITE_DATABASE_PATH")),
-    postgresConnectionString: Config.option(Config.string("TODO_POSTGRES_CONNECTION_STRING"))
+    markdownFilePath: Config.option(Config.string("TODO_MARKDOWN_FILE_PATH"))
   }),
-  ({ providerType, jsonFilePath, sqliteDatabasePath, postgresConnectionString }): DataProviderConfig => {
+  ({ providerType, jsonFilePath, markdownFilePath }): DataProviderConfig => {
     switch (providerType) {
       case "json":
         return {
@@ -65,21 +53,10 @@ export const loadDataProviderConfig = Config.map(
         return {
           type: "memory"
         }
-      case "sqlite":
-        if (sqliteDatabasePath._tag === "None") {
-          throw new Error("TODO_SQLITE_DATABASE_PATH must be set when using sqlite provider")
-        }
+      case "markdown":
         return {
-          type: "sqlite",
-          databasePath: sqliteDatabasePath.value
-        }
-      case "postgres":
-        if (postgresConnectionString._tag === "None") {
-          throw new Error("TODO_POSTGRES_CONNECTION_STRING must be set when using postgres provider")
-        }
-        return {
-          type: "postgres",
-          connectionString: postgresConnectionString.value
+          type: "markdown",
+          filePath: markdownFilePath._tag === "Some" ? markdownFilePath.value : undefined
         }
     }
   }

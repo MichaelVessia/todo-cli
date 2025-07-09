@@ -10,7 +10,7 @@ A modern command-line todo application built with TypeScript and Effect, featuri
 - **Status Tracking**: Pending, in-progress, and completed status states
 - **Due Dates**: Optional due date support with overdue detection
 - **Bulk Operations**: Multi-select for removing and completing multiple todos
-- **Data Persistence**: JSON file storage in user home directory (`~/.todo-cli/todos.json`)
+- **Data Persistence**: Multiple storage formats (Markdown, JSON, Memory) with configurable paths
 - **Schema Validation**: Runtime validation using Effect Schema
 - **Error Handling**: Comprehensive error handling with custom error types
 
@@ -49,7 +49,35 @@ todo-cli complete # Complete todos
 
 ## Data Storage
 
-Todos are stored in JSON format at `~/.todo-cli/todos.json` with the following structure:
+The application supports multiple storage formats that can be configured via environment variables.
+
+### Storage Formats
+
+#### Markdown (Default)
+Human-readable format stored at `~/.todo-cli/todos.md`:
+
+```markdown
+# Todo List
+
+## Pending
+
+- [ ] 🟡 Example task
+  <!-- id: abc123, priority: medium, created: 2024-01-01T10:00:00Z, updated: 2024-01-01T10:00:00Z -->
+  Task description here
+
+## In Progress
+
+- [ ] 🔴 Important task
+  <!-- id: def456, priority: high, created: 2024-01-01T11:00:00Z, updated: 2024-01-01T11:30:00Z -->
+
+## Completed
+
+- [x] 🟢 Completed task
+  <!-- id: ghi789, priority: low, created: 2024-01-01T09:00:00Z, updated: 2024-01-01T12:00:00Z -->
+```
+
+#### JSON
+Structured format stored at `~/.todo-cli/todos.json`:
 
 ```json
 [
@@ -65,6 +93,48 @@ Todos are stored in JSON format at `~/.todo-cli/todos.json` with the following s
   }
 ]
 ```
+
+#### Memory
+Temporary in-memory storage (data lost on application exit).
+
+### Configuration
+
+Configure storage format using environment variables:
+
+```bash
+# Use Markdown format (default)
+export TODO_PROVIDER_TYPE=markdown
+export TODO_MARKDOWN_FILE_PATH=/path/to/todos.md  # optional
+
+# Use JSON format
+export TODO_PROVIDER_TYPE=json
+export TODO_JSON_FILE_PATH=/path/to/todos.json    # optional
+
+# Use Memory format
+export TODO_PROVIDER_TYPE=memory
+```
+
+### Switching Between Formats
+
+To switch from one format to another:
+
+1. **Export existing data** (if needed):
+   ```bash
+   # Copy your current todos file before switching
+   cp ~/.todo-cli/todos.md ~/.todo-cli/todos.md.backup
+   ```
+
+2. **Set environment variable**:
+   ```bash
+   export TODO_PROVIDER_TYPE=json  # or markdown, memory
+   ```
+
+3. **Run the application**:
+   ```bash
+   todo-cli
+   ```
+
+Note: Data is not automatically migrated between formats. You'll need to manually recreate todos when switching formats, or implement a migration script if needed.
 
 ## Development
 

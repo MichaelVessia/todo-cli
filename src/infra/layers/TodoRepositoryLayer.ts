@@ -7,10 +7,12 @@ import { TodoRepositoryError } from "../../domain/todo/TodoErrors.js"
 import { TodoRepository } from "../../domain/todo/TodoRepository.js"
 import { type DataProviderConfig, loadDataProviderConfig } from "../config/DataProviderConfig.js"
 import { make as makeJsonTodoRepository } from "../persistence/JsonTodoRepository.js"
+import { make as makeMarkdownTodoRepository } from "../persistence/MarkdownTodoRepository.js"
 import { make as makeMemoryTodoRepository } from "../persistence/MemoryTodoRepository.js"
 
 const TODO_DIR = path.join(os.homedir(), ".todo-cli")
 const DEFAULT_JSON_FILE_PATH = path.join(TODO_DIR, "todos.json")
+const DEFAULT_MARKDOWN_FILE_PATH = path.join(TODO_DIR, "todos.md")
 
 const createRepository = (
   config: DataProviderConfig
@@ -38,22 +40,21 @@ const createRepository = (
         return makeMemoryTodoRepository()
       }
 
-      case "sqlite": {
-        // TODO: Implement SQLite repository
-        return yield* Effect.fail(
-          new TodoRepositoryError({
-            cause: new Error("SQLite provider not yet implemented")
-          })
-        )
-      }
+      case "markdown": {
+        const fs = yield* FileSystem.FileSystem
+        const filePath = config.filePath || DEFAULT_MARKDOWN_FILE_PATH
+        const dir = path.dirname(filePath)
 
-      case "postgres": {
-        // TODO: Implement PostgreSQL repository
-        return yield* Effect.fail(
-          new TodoRepositoryError({
-            cause: new Error("PostgreSQL provider not yet implemented")
-          })
-        )
+        const dirExists = yield* fs
+          .exists(dir)
+          .pipe(Effect.mapError((error) => new TodoRepositoryError({ cause: error })))
+        if (!dirExists) {
+          yield* fs
+            .makeDirectory(dir, { recursive: true })
+            .pipe(Effect.mapError((error) => new TodoRepositoryError({ cause: error })))
+        }
+
+        return makeMarkdownTodoRepository(filePath)
       }
     }
   })
