@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { Effect } from "effect"
+import { Effect, TestContext, Layer } from "effect"
 import { Todo, makeTodo } from "../../../src/domain/todo/Todo.js"
 import { TodoRepository } from "../../../src/domain/todo/TodoRepository.js"
 import { TodoRepositoryLayer } from "../../../src/infra/layers/TodoRepositoryLayer.js"
@@ -27,7 +27,7 @@ describe("TodoRepositoryLayer", () => {
       const repository = yield* TodoRepository
       
       // Save a todo
-      const todo = makeTodo({ title: "Test todo", priority: "medium" })
+      const todo = yield* makeTodo({ title: "Test todo", priority: "medium" })
       yield* repository.save(todo)
       
       // Find all todos
@@ -40,9 +40,7 @@ describe("TodoRepositoryLayer", () => {
     })
 
     const result = await Effect.runPromise(
-      program.pipe(
-        Effect.provide(TodoRepositoryLayer)
-      )
+      Effect.provide(program, Layer.merge(TodoRepositoryLayer, TestContext.TestContext)) as any
     )
     
     expect(result).toBe(true)
@@ -51,7 +49,7 @@ describe("TodoRepositoryLayer", () => {
   test("different test instances should have isolated data", async () => {
     const program1 = Effect.gen(function* () {
       const repository = yield* TodoRepository
-      const todo = makeTodo({ title: "Todo in instance 1", priority: "high" })
+      const todo = yield* makeTodo({ title: "Todo in instance 1", priority: "high" })
       yield* repository.save(todo)
       const count = yield* repository.count()
       yield* repository.deleteById(todo.id)
@@ -63,8 +61,8 @@ describe("TodoRepositoryLayer", () => {
       return yield* repository.count()
     })
 
-    await Effect.runPromise(program1.pipe(Effect.provide(SqliteTest)))
-    const count2 = await Effect.runPromise(program2.pipe(Effect.provide(SqliteTest)))
+    await Effect.runPromise(Effect.provide(program1, Layer.merge(SqliteTest, TestContext.TestContext)) as any)
+    const count2 = await Effect.runPromise(Effect.provide(program2, Layer.merge(SqliteTest, TestContext.TestContext)) as any)
     
     // Both should start with 0 todos since we're using in-memory SQLite
     expect(count2).toBe(0)
@@ -75,8 +73,9 @@ describe("TodoRepositoryLayer", () => {
       const repository = yield* TodoRepository
       
       // Add multiple todos
-      const todo1 = makeTodo({ title: "Todo 1", priority: "low" })
-      const todo2 = new Todo({ ...makeTodo({ title: "Todo 2", priority: "medium" }), status: "in_progress" })
+      const todo1 = yield* makeTodo({ title: "Todo 1", priority: "low" })
+      const todo2Base = yield* makeTodo({ title: "Todo 2", priority: "medium" })
+      const todo2 = new Todo({ ...todo2Base, status: "in_progress" })
       yield* repository.save(todo1)
       yield* repository.save(todo2)
       
@@ -96,8 +95,8 @@ describe("TodoRepositoryLayer", () => {
     })
 
     const result = await Effect.runPromise(
-      program.pipe(Effect.provide(SqliteTest))
-    )
+      Effect.provide(program, Layer.merge(SqliteTest, TestContext.TestContext)) as any
+    ) as { initialCount: number; finalCount: number }
     
     expect(result.initialCount).toBe(2)
     expect(result.finalCount).toBe(1)

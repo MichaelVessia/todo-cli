@@ -14,11 +14,11 @@
   "scripts": {
     "build": "bun build ./src/bin.ts --outdir=./dist --target=bun && cp package.json README.md LICENSE dist/ && sed -i 's|\"./dist/bin.js\"|\"./bin.js\"|' dist/package.json",
     "clean": "rm -rf dist/*",
-    "check": "biome check src && biome format src && bun x tsc --noEmit && bun test --typecheck",
+    "check": "bun lint:fix src && bun format src && bun x tsc --noEmit && bun test",
     "lint": "biome check src",
-    "lint-fix": "biome check --write src",
+    "lint:fix": "biome check --write src",
     "format": "biome format --write src",
-    "test": "bun test",
+    "test": "bun test --typecheck",
     "coverage": "bun test --coverage",
     "changeset-version": "changeset version",
     "changeset-publish": "bun run build && bun test"

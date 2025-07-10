@@ -126,7 +126,7 @@ export const promptForUpdateTodo = () =>
       case "dueDate": {
         const newDueDate = yield* Prompt.text({
           message: "Enter due date (YYYY-MM-DD):",
-          default: selectedTodo.dueDate?.toISOString().split("T")[0] || ""
+          default: selectedTodo.dueDate ? new Date(selectedTodo.dueDate).toISOString().split("T")[0] : ""
         })
         args.dueDate = newDueDate
         break

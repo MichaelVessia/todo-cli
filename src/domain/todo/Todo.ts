@@ -1,5 +1,6 @@
 import { Schema } from "@effect/schema"
-import { Data } from "effect"
+import { Clock, Data, Effect } from "effect"
+import type * as Types from "effect/Clock"
 import { DEFAULT_PRIORITY, PRIORITY_VALUES } from "./PriorityConstants.js"
 import { TodoId, TodoIdSchema } from "./TodoId.js"
 
@@ -15,9 +16,9 @@ export const TodoSchema = Schema.Struct({
   description: Schema.optional(Schema.String),
   status: TodoStatus,
   priority: TodoPriority,
-  createdAt: Schema.DateTimeUtc,
-  updatedAt: Schema.DateTimeUtc,
-  dueDate: Schema.optional(Schema.DateTimeUtc)
+  createdAt: Schema.Number,
+  updatedAt: Schema.Number,
+  dueDate: Schema.optional(Schema.Number)
 })
 
 export class Todo extends Data.Class<{
@@ -26,95 +27,115 @@ export class Todo extends Data.Class<{
   readonly description?: string
   readonly status: TodoStatus
   readonly priority: TodoPriority
-  readonly createdAt: Date
-  readonly updatedAt: Date
-  readonly dueDate?: Date
+  readonly createdAt: number
+  readonly updatedAt: number
+  readonly dueDate?: number
 }> {}
 
 export const makeTodo = (props: {
   title: string
   description?: string
   priority?: TodoPriority
-  dueDate?: Date
-}): Todo => {
-  const now = new Date()
-  // Validate that the dates are valid
-  if (Number.isNaN(now.getTime())) {
-    throw new Error("Invalid current date")
-  }
-  if (props.dueDate && Number.isNaN(props.dueDate.getTime())) {
-    throw new Error("Invalid due date")
-  }
+  dueDate?: number
+}): Effect.Effect<Todo, never, Types.Clock> =>
+  Effect.gen(function* () {
+    const now = yield* Clock.currentTimeMillis
 
-  return new Todo({
-    id: TodoId.generate(),
-    title: props.title,
-    ...(props.description ? { description: props.description } : {}),
-    status: "unstarted" as const,
-    priority: props.priority ?? DEFAULT_PRIORITY,
-    createdAt: now,
-    updatedAt: now,
-    ...(props.dueDate ? { dueDate: props.dueDate } : {})
-  })
-}
+    // Validate that the due date is valid if provided
+    if (props.dueDate && !Number.isInteger(props.dueDate)) {
+      throw new Error("Invalid due date timestamp")
+    }
 
-export const complete = (todo: Todo): Todo =>
-  new Todo({
-    ...todo,
-    status: "completed",
-    updatedAt: new Date()
+    return new Todo({
+      id: TodoId.generate(),
+      title: props.title,
+      ...(props.description ? { description: props.description } : {}),
+      status: "unstarted" as const,
+      priority: props.priority ?? DEFAULT_PRIORITY,
+      createdAt: now,
+      updatedAt: now,
+      ...(props.dueDate ? { dueDate: props.dueDate } : {})
+    })
   })
 
-export const start = (todo: Todo): Todo =>
-  new Todo({
-    ...todo,
-    status: "in_progress",
-    updatedAt: new Date()
+export const complete = (todo: Todo): Effect.Effect<Todo, never, Types.Clock> =>
+  Effect.gen(function* () {
+    const now = yield* Clock.currentTimeMillis
+    return new Todo({
+      ...todo,
+      status: "completed",
+      updatedAt: now
+    })
+  })
+
+export const start = (todo: Todo): Effect.Effect<Todo, never, Types.Clock> =>
+  Effect.gen(function* () {
+    const now = yield* Clock.currentTimeMillis
+    return new Todo({
+      ...todo,
+      status: "in_progress",
+      updatedAt: now
+    })
   })
 
 export const updateTitle =
   (title: string) =>
-  (todo: Todo): Todo =>
-    new Todo({
-      ...todo,
-      title,
-      updatedAt: new Date()
+  (todo: Todo): Effect.Effect<Todo, never, Types.Clock> =>
+    Effect.gen(function* () {
+      const now = yield* Clock.currentTimeMillis
+      return new Todo({
+        ...todo,
+        title,
+        updatedAt: now
+      })
     })
 
 export const updateDescription =
   (description: string) =>
-  (todo: Todo): Todo =>
-    new Todo({
-      ...todo,
-      description,
-      updatedAt: new Date()
+  (todo: Todo): Effect.Effect<Todo, never, Types.Clock> =>
+    Effect.gen(function* () {
+      const now = yield* Clock.currentTimeMillis
+      return new Todo({
+        ...todo,
+        description,
+        updatedAt: now
+      })
     })
 
 export const updatePriority =
   (priority: TodoPriority) =>
-  (todo: Todo): Todo =>
-    new Todo({
-      ...todo,
-      priority,
-      updatedAt: new Date()
+  (todo: Todo): Effect.Effect<Todo, never, Types.Clock> =>
+    Effect.gen(function* () {
+      const now = yield* Clock.currentTimeMillis
+      return new Todo({
+        ...todo,
+        priority,
+        updatedAt: now
+      })
     })
 
 export const updateDueDate =
-  (dueDate: Date) =>
-  (todo: Todo): Todo =>
-    new Todo({
-      ...todo,
-      dueDate,
-      updatedAt: new Date()
+  (dueDate: number) =>
+  (todo: Todo): Effect.Effect<Todo, never, Types.Clock> =>
+    Effect.gen(function* () {
+      const now = yield* Clock.currentTimeMillis
+      return new Todo({
+        ...todo,
+        dueDate,
+        updatedAt: now
+      })
     })
 
 export const updateStatus =
   (status: TodoStatus) =>
-  (todo: Todo): Todo =>
-    new Todo({
-      ...todo,
-      status,
-      updatedAt: new Date()
+  (todo: Todo): Effect.Effect<Todo, never, Types.Clock> =>
+    Effect.gen(function* () {
+      const now = yield* Clock.currentTimeMillis
+      return new Todo({
+        ...todo,
+        status,
+        updatedAt: now
+      })
     })
 
 export const isCompleted = (todo: Todo): boolean => todo.status === "completed"
@@ -123,8 +144,14 @@ export const isUnstarted = (todo: Todo): boolean => todo.status === "unstarted"
 
 export const isInProgress = (todo: Todo): boolean => todo.status === "in_progress"
 
-export const isOverdue = (todo: Todo): boolean =>
-  todo.dueDate !== undefined && todo.dueDate < new Date() && !isCompleted(todo)
+export const isOverdue = (todo: Todo): Effect.Effect<boolean, never, Types.Clock> =>
+  Effect.gen(function* () {
+    if (todo.dueDate === undefined || isCompleted(todo)) {
+      return false
+    }
+    const now = yield* Clock.currentTimeMillis
+    return todo.dueDate < now
+  })
 
 export const isHighPriority = (todo: Todo): boolean => todo.priority === PRIORITY_VALUES.HIGH
 
@@ -143,7 +170,7 @@ export const toJSON = (todo: Todo) => ({
   description: todo.description,
   status: todo.status,
   priority: todo.priority,
-  createdAt: todo.createdAt.toISOString(),
-  updatedAt: todo.updatedAt.toISOString(),
-  dueDate: todo.dueDate?.toISOString()
+  createdAt: new Date(todo.createdAt).toISOString(),
+  updatedAt: new Date(todo.updatedAt).toISOString(),
+  dueDate: todo.dueDate ? new Date(todo.dueDate).toISOString() : undefined
 })

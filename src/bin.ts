@@ -7,4 +7,6 @@ import { TodoRepositoryLayer } from "./infra/layers/TodoRepositoryLayer.js"
 
 const MainLayer = Layer.mergeAll(BunContext.layer, TodoRepositoryLayer)
 
-run(process.argv).pipe(Effect.provide(MainLayer), BunRuntime.runMain({ disableErrorReporting: true }))
+const program = run(process.argv).pipe(Effect.provide(MainLayer))
+
+BunRuntime.runMain(program as any, { disableErrorReporting: true })

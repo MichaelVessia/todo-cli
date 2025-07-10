@@ -34,13 +34,14 @@ export interface CompleteTodoArgs {
 
 export const addTodoWithArgs = (args: AddTodoArgs) =>
   Effect.gen(function* () {
-    let dueDate: Date | undefined
+    let dueDate: number | undefined
     if (args.dueDate && args.dueDate.trim() !== "") {
-      dueDate = new Date(args.dueDate)
-      if (Number.isNaN(dueDate.getTime())) {
+      const parsedDate = new Date(args.dueDate)
+      if (Number.isNaN(parsedDate.getTime())) {
         yield* Console.log(`Invalid due date format: ${args.dueDate}. Please use YYYY-MM-DD format.`)
         return
       }
+      dueDate = parsedDate.getTime()
     }
 
     const command: AddTodoCommand = {
@@ -78,12 +79,12 @@ export const updateTodoWithArgs = (args: UpdateTodoArgs) =>
     if (args.priority !== undefined) changes.priority = args.priority
     if (args.status !== undefined) changes.status = args.status
     if (args.dueDate !== undefined) {
-      const dueDate = new Date(args.dueDate)
-      if (Number.isNaN(dueDate.getTime())) {
+      const parsedDate = new Date(args.dueDate)
+      if (Number.isNaN(parsedDate.getTime())) {
         yield* Console.log(`Invalid due date format: ${args.dueDate}. Please use YYYY-MM-DD format.`)
         return
       }
-      changes.dueDate = dueDate
+      changes.dueDate = parsedDate.getTime()
     }
 
     const updatedTodo = yield* updateTodo({

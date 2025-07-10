@@ -7,7 +7,7 @@ export interface AddTodoCommand {
   readonly title: string
   readonly description?: string | undefined
   readonly priority: "low" | "medium" | "high"
-  readonly dueDate?: Date | undefined
+  readonly dueDate?: number | undefined
 }
 
 export const addTodo = (command: AddTodoCommand) =>
@@ -21,7 +21,7 @@ export const addTodo = (command: AddTodoCommand) =>
       )
     }
 
-    const todo = makeTodo({
+    const todo = yield* makeTodo({
       title: command.title,
       ...(command.description ? { description: command.description } : {}),
       priority: command.priority,

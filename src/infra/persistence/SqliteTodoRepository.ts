@@ -16,9 +16,9 @@ const createTodosTable = SqlClient.SqlClient.pipe(
         description TEXT,
         status TEXT NOT NULL,
         priority TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL,
-        due_date TEXT
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        due_date INTEGER
       )
     `
   ),
@@ -35,9 +35,9 @@ class SqliteTodoRepository implements TodoRepository {
       description: row.description || undefined,
       status: row.status as Todo["status"],
       priority: row.priority as Todo["priority"],
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-      ...(row.due_date ? { dueDate: new Date(row.due_date) } : {})
+      createdAt: row.created_at as number,
+      updatedAt: row.updated_at as number,
+      ...(row.due_date ? { dueDate: row.due_date as number } : {})
     })
 
   readonly findById = (id: TodoId): Effect.Effect<Todo, TodoNotFoundError | TodoRepositoryError, never> =>
@@ -87,9 +87,9 @@ class SqliteTodoRepository implements TodoRepository {
             ${Option.getOrNull(Option.fromNullable(todo.description))},
             ${todo.status},
             ${todo.priority},
-            ${todo.createdAt.toISOString()},
-            ${todo.updatedAt.toISOString()},
-            ${Option.getOrNull(Option.fromNullable(todo.dueDate?.toISOString()))}
+            ${todo.createdAt},
+            ${todo.updatedAt},
+            ${Option.getOrNull(Option.fromNullable(todo.dueDate))}
           )
         `.pipe(Effect.mapError((error) => new TodoRepositoryError({ cause: error })))
 
@@ -105,8 +105,8 @@ class SqliteTodoRepository implements TodoRepository {
         description = ${Option.getOrNull(Option.fromNullable(todo.description))},
         status = ${todo.status},
         priority = ${todo.priority},
-        updated_at = ${todo.updatedAt.toISOString()},
-        due_date = ${Option.getOrNull(Option.fromNullable(todo.dueDate?.toISOString()))}
+        updated_at = ${todo.updatedAt},
+        due_date = ${Option.getOrNull(Option.fromNullable(todo.dueDate))}
       WHERE id = ${todo.id as string}
     `.pipe(
       Effect.map(() => todo),

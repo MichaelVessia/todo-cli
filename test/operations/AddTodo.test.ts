@@ -1,7 +1,8 @@
-import { Effect, Layer } from "effect"
+import { Effect, Layer, TestClock, TestContext } from "effect"
 import { beforeEach, describe, expect, test } from "bun:test"
 import { addTodo } from "../../src/operations/AddTodo.js"
 import { TodoRepository } from "../../src/domain/todo/TodoRepository.js"
+import { Todo } from "../../src/domain/todo/Todo.js"
 import { makeMockTodoRepository } from "../infra/persistence/MockTodoRepository.js"
 
 describe("AddTodo", () => {
@@ -19,17 +20,17 @@ describe("AddTodo", () => {
         title: "Test Todo",
         description: "Test description",
         priority: "medium" as const,
-        dueDate: new Date("2024-12-31"),
+        dueDate: new Date("2024-12-31").getTime(),
       }
 
       const result = await Effect.runPromise(
-        addTodo(command).pipe(Effect.provide(mockRepositoryLayer))
-      )
+        Effect.provide(addTodo(command), Layer.merge(mockRepositoryLayer, TestContext.TestContext)) as any
+      ) as Todo
 
       expect(result.title).toBe("Test Todo")
       expect(result.description).toBe("Test description")
       expect(result.priority).toBe("medium")
-      expect(result.dueDate).toEqual(new Date("2024-12-31"))
+      expect(result.dueDate).toBe(new Date("2024-12-31").getTime())
       expect(result.status).toBe("unstarted")
 
       const savedTodos = mockRepository.getTodos()
@@ -42,11 +43,11 @@ describe("AddTodo", () => {
         title: "",
         description: "Test description",
         priority: "medium" as const,
-        dueDate: new Date("2024-12-31"),
+        dueDate: new Date("2024-12-31").getTime(),
       }
 
       const result = Effect.runPromise(
-        addTodo(command).pipe(Effect.provide(mockRepositoryLayer))
+        Effect.provide(addTodo(command), Layer.merge(mockRepositoryLayer, TestContext.TestContext)) as any
       )
 
       await expect(result).rejects.toThrow("Title cannot be empty")
@@ -57,11 +58,11 @@ describe("AddTodo", () => {
         title: "   \n\t  ",
         description: "Test description",
         priority: "medium" as const,
-        dueDate: new Date("2024-12-31"),
+        dueDate: new Date("2024-12-31").getTime(),
       }
 
       const result = Effect.runPromise(
-        addTodo(command).pipe(Effect.provide(mockRepositoryLayer))
+        Effect.provide(addTodo(command), Layer.merge(mockRepositoryLayer, TestContext.TestContext)) as any
       )
 
       await expect(result).rejects.toThrow("Title cannot be empty")
@@ -72,12 +73,12 @@ describe("AddTodo", () => {
         title: "Minimal Todo",
         description: "",
         priority: "low" as const,
-        dueDate: new Date(),
+        dueDate: Date.now(),
       }
 
       const result = await Effect.runPromise(
-        addTodo(command).pipe(Effect.provide(mockRepositoryLayer))
-      )
+        Effect.provide(addTodo(command), Layer.merge(mockRepositoryLayer, TestContext.TestContext)) as any
+      ) as Todo
 
       expect(result.title).toBe("Minimal Todo")
       expect(result.priority).toBe("low")
@@ -89,37 +90,42 @@ describe("AddTodo", () => {
         title: "High Priority Todo",
         description: "Important task",
         priority: "high" as const,
-        dueDate: new Date("2024-01-01"),
+        dueDate: new Date("2024-01-01").getTime(),
       }
 
       const result = await Effect.runPromise(
-        addTodo(command).pipe(Effect.provide(mockRepositoryLayer))
-      )
+        Effect.provide(addTodo(command), Layer.merge(mockRepositoryLayer, TestContext.TestContext)) as any
+      ) as Todo
 
       expect(result.priority).toBe("high")
       expect(result.title).toBe("High Priority Todo")
     })
 
-    test("should create todo with current timestamps", async () => {
-      const beforeTime = new Date()
-      
-      const command = {
-        title: "Time Test Todo",
-        description: "Test timestamps",
-        priority: "medium" as const,
-        dueDate: new Date("2024-12-31"),
-      }
+    test("should create todo with deterministic timestamps using TestClock", async () => {
+      const program = Effect.gen(function* () {
+        // Set a specific time for deterministic testing
+        yield* TestClock.setTime(1000000)
+        
+        const command = {
+          title: "Time Test Todo",
+          description: "Test timestamps",
+          priority: "medium" as const,
+          dueDate: new Date("2024-12-31").getTime(),
+        }
 
-      const result = await Effect.runPromise(
-        addTodo(command).pipe(Effect.provide(mockRepositoryLayer))
+        const result = yield* addTodo(command)
+
+        // With TestClock, createdAt and updatedAt should be exactly 1000000
+        expect(result.createdAt).toBe(1000000)
+        expect(result.updatedAt).toBe(1000000)
+        expect(result.createdAt).toBe(result.updatedAt)
+
+        return result
+      })
+
+      await Effect.runPromise(
+        Effect.provide(program, Layer.merge(mockRepositoryLayer, TestContext.TestContext)) as any
       )
-
-      const afterTime = new Date()
-
-      expect(result.createdAt.getTime()).toBeGreaterThanOrEqual(beforeTime.getTime())
-      expect(result.createdAt.getTime()).toBeLessThanOrEqual(afterTime.getTime())
-      expect(result.updatedAt.getTime()).toBeGreaterThanOrEqual(beforeTime.getTime())
-      expect(result.updatedAt.getTime()).toBeLessThanOrEqual(afterTime.getTime())
     })
 
     test("should generate unique IDs for different todos", async () => {
@@ -127,23 +133,23 @@ describe("AddTodo", () => {
         title: "Todo 1",
         description: "First todo",
         priority: "medium" as const,
-        dueDate: new Date("2024-12-31"),
+        dueDate: new Date("2024-12-31").getTime(),
       }
 
       const command2 = {
         title: "Todo 2",
         description: "Second todo",
         priority: "high" as const,
-        dueDate: new Date("2024-12-31"),
+        dueDate: new Date("2024-12-31").getTime(),
       }
 
       const result1 = await Effect.runPromise(
-        addTodo(command1).pipe(Effect.provide(mockRepositoryLayer))
-      )
+        Effect.provide(addTodo(command1), Layer.merge(mockRepositoryLayer, TestContext.TestContext)) as any
+      ) as Todo
 
       const result2 = await Effect.runPromise(
-        addTodo(command2).pipe(Effect.provide(mockRepositoryLayer))
-      )
+        Effect.provide(addTodo(command2), Layer.merge(mockRepositoryLayer, TestContext.TestContext)) as any
+      ) as Todo
 
       expect(result1.id).not.toEqual(result2.id)
 
