@@ -1,6 +1,6 @@
 import * as Command from "@effect/cli/Command"
 import * as Options from "@effect/cli/Options"
-import { Console, Effect } from "effect"
+import { Console, Effect, Option } from "effect"
 import { PRIORITY_ARRAY } from "../domain/todo/PriorityConstants.js"
 import {
   addTodoWithArgs,
@@ -25,16 +25,22 @@ export const addCommand = Command.make(
     dueDate: addDueDate
   },
   (args) => {
-    if (args.title._tag === "Some") {
-      return addTodoWithArgs({
-        title: args.title.value,
-        description: args.description._tag === "Some" ? args.description.value : "",
-        priority: args.priority._tag === "Some" ? args.priority.value : "medium",
-        dueDate: args.dueDate._tag === "Some" ? args.dueDate.value : undefined
-      }).pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
-    } else {
-      return promptForAddTodo().pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
-    }
+    const action = Option.match(args.title, {
+      onNone: () =>
+        promptForAddTodo().pipe(
+          Effect.asVoid,
+          Effect.catchTag("QuitException", () => Effect.void)
+        ),
+      onSome: (title) =>
+        addTodoWithArgs({
+          title,
+          description: Option.getOrElse(args.description, () => ""),
+          priority: Option.getOrElse(args.priority, () => "medium" as const),
+          dueDate: Option.getOrElse(args.dueDate, () => undefined)
+        }).pipe(Effect.asVoid)
+    })
+
+    return action.pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
   }
 )
 
