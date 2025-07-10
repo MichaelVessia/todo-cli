@@ -28,8 +28,8 @@ export const addCommand = Command.make(
     if (args.title._tag === "Some") {
       return addTodoWithArgs({
         title: args.title.value,
-        description: args.description._tag === "Some" ? args.description.value : undefined,
-        priority: args.priority._tag === "Some" ? args.priority.value : undefined,
+        description: args.description._tag === "Some" ? args.description.value : "",
+        priority: args.priority._tag === "Some" ? args.priority.value : "medium",
         dueDate: args.dueDate._tag === "Some" ? args.dueDate.value : undefined
       }).pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
     } else {
@@ -63,14 +63,14 @@ export const updateCommand = Command.make(
   },
   (args) => {
     if (args.id._tag === "Some") {
-      return updateTodoWithArgs({
-        id: args.id.value,
-        title: args.title._tag === "Some" ? args.title.value : undefined,
-        description: args.description._tag === "Some" ? args.description.value : undefined,
-        priority: args.priority._tag === "Some" ? args.priority.value : undefined,
-        status: args.status._tag === "Some" ? args.status.value : undefined,
-        dueDate: args.dueDate._tag === "Some" ? args.dueDate.value : undefined
-      }).pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
+      const updateArgs: any = { id: args.id.value }
+      if (args.title._tag === "Some") updateArgs.title = args.title.value
+      if (args.description._tag === "Some") updateArgs.description = args.description.value
+      if (args.priority._tag === "Some") updateArgs.priority = args.priority.value
+      if (args.status._tag === "Some") updateArgs.status = args.status.value
+      if (args.dueDate._tag === "Some") updateArgs.dueDate = args.dueDate.value
+
+      return updateTodoWithArgs(updateArgs).pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
     } else {
       return promptForUpdateTodo().pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
     }

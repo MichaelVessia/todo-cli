@@ -1,8 +1,7 @@
-import { Context, Effect, Layer } from "effect"
+import { Effect, Layer } from "effect"
 import { beforeEach, describe, expect, test } from "bun:test"
 import { addTodo } from "../../src/operations/AddTodo.js"
 import { TodoRepository } from "../../src/domain/todo/TodoRepository.js"
-import { TodoValidationError } from "../../src/domain/todo/TodoErrors.js"
 import { makeMockTodoRepository } from "../infra/persistence/MockTodoRepository.js"
 
 describe("AddTodo", () => {

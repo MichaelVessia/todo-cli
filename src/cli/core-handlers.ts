@@ -1,5 +1,6 @@
 import { Console, Effect } from "effect"
-import { type PRIORITY_ARRAY, PRIORITY_VALUES } from "../domain/todo/PriorityConstants.js"
+import type { PRIORITY_ARRAY } from "../domain/todo/PriorityConstants.js"
+import { TodoId } from "../domain/todo/TodoId.js"
 import { type AddTodoCommand, addTodo } from "../operations/AddTodo.js"
 import { getTodos } from "../operations/ListTodos.js"
 import { removeTodos } from "../operations/RemoveTodo.js"
@@ -8,9 +9,9 @@ import { updateTodo } from "../operations/UpdateTodo.js"
 
 export interface AddTodoArgs {
   title: string
-  description?: string
-  priority?: (typeof PRIORITY_ARRAY)[number]
-  dueDate?: string
+  description: string
+  priority: (typeof PRIORITY_ARRAY)[number]
+  dueDate?: string | undefined
 }
 
 export interface UpdateTodoArgs {
@@ -43,8 +44,8 @@ export const addTodoWithArgs = (args: AddTodoArgs) =>
 
     const command: AddTodoCommand = {
       title: args.title,
-      description: args.description || "",
-      priority: args.priority || PRIORITY_VALUES.MEDIUM,
+      description: args.description,
+      priority: args.priority,
       ...(dueDate ? { dueDate } : {})
     }
 
@@ -85,7 +86,7 @@ export const updateTodoWithArgs = (args: UpdateTodoArgs) =>
     }
 
     const updatedTodo = yield* updateTodo({
-      id: args.id,
+      id: TodoId.make(args.id),
       changes
     })
 
@@ -101,7 +102,7 @@ export const removeTodosWithArgs = (args: RemoveTodoArgs) =>
     }
 
     const todos = yield* getTodos()
-    const selectedTodos = todos.filter((todo) => args.ids.includes(todo.id))
+    const selectedTodos = todos.filter((todo) => args.ids.includes(TodoId.toString(todo.id)))
 
     if (selectedTodos.length === 0) {
       yield* Console.log("No matching todos found.")
@@ -112,7 +113,7 @@ export const removeTodosWithArgs = (args: RemoveTodoArgs) =>
     yield* Effect.forEach(selectedTodos, (todo) => Console.log(`- ${todo.title}`))
 
     yield* removeTodos({
-      ids: args.ids
+      ids: args.ids.map(TodoId.make)
     })
 
     yield* Console.log(`${selectedTodos.length} todos removed successfully.`)
@@ -126,7 +127,7 @@ export const completeTodosWithArgs = (args: CompleteTodoArgs) =>
     }
 
     const todos = yield* getTodos()
-    const selectedTodos = todos.filter((todo) => args.ids.includes(todo.id))
+    const selectedTodos = todos.filter((todo) => args.ids.includes(TodoId.toString(todo.id)))
 
     if (selectedTodos.length === 0) {
       yield* Console.log("No matching todos found.")

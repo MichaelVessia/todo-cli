@@ -2,7 +2,6 @@ import { Effect, Layer } from "effect"
 import { beforeEach, describe, expect, test } from "bun:test"
 import { updateTodo } from "../../src/operations/UpdateTodo.js"
 import { TodoRepository } from "../../src/domain/todo/TodoRepository.js"
-import { TodoValidationError, TodoNotFoundError } from "../../src/domain/todo/TodoErrors.js"
 import { makeTodo } from "../../src/domain/todo/Todo.js"
 import { TodoId } from "../../src/domain/todo/TodoId.js"
 import { makeMockTodoRepository } from "../infra/persistence/MockTodoRepository.js"
@@ -199,7 +198,7 @@ describe("UpdateTodo", () => {
       const originalTodo = makeTodo({ title: "Test Todo" })
       mockRepository.setTodos([originalTodo])
 
-      const statuses = ["pending", "in_progress", "completed"] as const
+      const statuses = ["unstarted", "in_progress", "completed"] as const
 
       for (const status of statuses) {
         const command = {

@@ -37,7 +37,7 @@ class SqliteTodoRepository implements TodoRepository {
       priority: row.priority as Todo["priority"],
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
-      dueDate: row.due_date ? new Date(row.due_date) : undefined
+      ...(row.due_date ? { dueDate: new Date(row.due_date) } : {})
     })
 
   readonly findById = (id: TodoId): Effect.Effect<Todo, TodoNotFoundError | TodoRepositoryError, never> =>
@@ -116,7 +116,7 @@ class SqliteTodoRepository implements TodoRepository {
   readonly deleteById = (id: TodoId): Effect.Effect<void, TodoNotFoundError | TodoRepositoryError, never> =>
     Effect.gen(
       function* (this: SqliteTodoRepository) {
-        const _result = yield* this.sql`
+        yield* this.sql`
           DELETE FROM todos WHERE id = ${id as string}
         `.pipe(Effect.mapError((error) => new TodoRepositoryError({ cause: error })))
 
@@ -161,7 +161,7 @@ class SqliteTodoRepository implements TodoRepository {
           SELECT COUNT(*) as count FROM todos
         `.pipe(Effect.mapError((error) => new TodoRepositoryError({ cause: error })))
 
-        return rows[0].count
+        return rows[0].count as number
       }.bind(this)
     )
 }

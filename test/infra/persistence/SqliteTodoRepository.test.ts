@@ -2,7 +2,6 @@ import { describe, expect, test } from "bun:test"
 import { Effect } from "effect"
 import { Todo, makeTodo } from "../../../src/domain/todo/Todo.js"
 import { TodoAlreadyExistsError, TodoNotFoundError } from "../../../src/domain/todo/TodoErrors.js"
-import { TodoId } from "../../../src/domain/todo/TodoId.js"
 import { TodoRepository } from "../../../src/domain/todo/TodoRepository.js"
 import { SqliteTest } from "../../../src/infra/persistence/SqliteTodoRepository.js"
 

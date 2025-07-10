@@ -63,7 +63,7 @@ describe("TodoRepositoryLayer", () => {
       return yield* repository.count()
     })
 
-    const count1 = await Effect.runPromise(program1.pipe(Effect.provide(SqliteTest)))
+    await Effect.runPromise(program1.pipe(Effect.provide(SqliteTest)))
     const count2 = await Effect.runPromise(program2.pipe(Effect.provide(SqliteTest)))
     
     // Both should start with 0 todos since we're using in-memory SQLite

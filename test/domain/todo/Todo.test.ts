@@ -1,10 +1,7 @@
 import { describe, expect, test } from "bun:test"
-import { DateTime } from "effect"
-import { DEFAULT_PRIORITY, PRIORITY_VALUES } from "../../../src/domain/todo/PriorityConstants.js"
+import { DEFAULT_PRIORITY } from "../../../src/domain/todo/PriorityConstants.js"
 import {
   Todo,
-  TodoPriority,
-  TodoStatus,
   complete,
   equals,
   isCompleted,

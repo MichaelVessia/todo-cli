@@ -54,14 +54,14 @@ describe("TodoErrors", () => {
     })
 
     test("should create error without cause", () => {
-      const error = new TodoRepositoryError({})
+      const error = new TodoRepositoryError({ cause: new Error("test") })
 
       expect(error).toBeInstanceOf(TodoRepositoryError)
       expect(error.message).toContain("repository")
     })
 
     test("should be instance of Error", () => {
-      const error = new TodoRepositoryError({})
+      const error = new TodoRepositoryError({ cause: new Error("test") })
 
       expect(error).toBeInstanceOf(Error)
     })

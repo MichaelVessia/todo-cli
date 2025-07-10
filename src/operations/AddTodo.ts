@@ -5,9 +5,9 @@ import { TodoRepository } from "../domain/todo/TodoRepository.js"
 
 export interface AddTodoCommand {
   readonly title: string
-  readonly description: string
+  readonly description?: string | undefined
   readonly priority: "low" | "medium" | "high"
-  readonly dueDate?: Date
+  readonly dueDate?: Date | undefined
 }
 
 export const addTodo = (command: AddTodoCommand) =>
@@ -23,9 +23,9 @@ export const addTodo = (command: AddTodoCommand) =>
 
     const todo = makeTodo({
       title: command.title,
-      description: command.description,
+      ...(command.description ? { description: command.description } : {}),
       priority: command.priority,
-      dueDate: command.dueDate
+      ...(command.dueDate ? { dueDate: command.dueDate } : {})
     })
 
     const repository = yield* TodoRepository

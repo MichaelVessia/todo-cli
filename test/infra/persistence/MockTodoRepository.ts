@@ -20,7 +20,7 @@ export class MockTodoRepository implements TodoRepository {
   }
 
   readonly findById = (id: TodoId): Effect.Effect<Todo, TodoNotFoundError | TodoRepositoryError, never> =>
-    Effect.gen(function* () {
+    Effect.gen(function* (this: MockTodoRepository) {
       const todo = this.todos.find((t) => TodoId.equals(t.id)(id))
       if (!todo) {
         return yield* Effect.fail(new TodoNotFoundError({ id }))
@@ -32,7 +32,7 @@ export class MockTodoRepository implements TodoRepository {
     Effect.succeed(this.todos)
 
   readonly save = (todo: Todo): Effect.Effect<Todo, TodoAlreadyExistsError | TodoRepositoryError, never> =>
-    Effect.gen(function* () {
+    Effect.gen(function* (this: MockTodoRepository) {
       const existingTodo = this.todos.find((t) => TodoId.equals(t.id)(todo.id))
       if (existingTodo) {
         return yield* Effect.fail(new TodoAlreadyExistsError({ id: todo.id }))
@@ -42,7 +42,7 @@ export class MockTodoRepository implements TodoRepository {
     }.bind(this))
 
   readonly update = (todo: Todo): Effect.Effect<Todo, TodoRepositoryError, never> =>
-    Effect.gen(function* () {
+    Effect.gen(function* (this: MockTodoRepository) {
       const index = this.todos.findIndex((t) => TodoId.equals(t.id)(todo.id))
       if (index >= 0) {
         this.todos[index] = todo
@@ -51,7 +51,7 @@ export class MockTodoRepository implements TodoRepository {
     }.bind(this))
 
   readonly deleteById = (id: TodoId): Effect.Effect<void, TodoNotFoundError | TodoRepositoryError, never> =>
-    Effect.gen(function* () {
+    Effect.gen(function* (this: MockTodoRepository) {
       const index = this.todos.findIndex((t) => TodoId.equals(t.id)(id))
       if (index === -1) {
         return yield* Effect.fail(new TodoNotFoundError({ id }))
