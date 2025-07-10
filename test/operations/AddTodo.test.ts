@@ -31,7 +31,7 @@ describe("AddTodo", () => {
       expect(result.description).toBe("Test description")
       expect(result.priority).toBe("medium")
       expect(result.dueDate).toEqual(new Date("2024-12-31"))
-      expect(result.status).toBe("pending")
+      expect(result.status).toBe("unstarted")
 
       const savedTodos = mockRepository.getTodos()
       expect(savedTodos).toHaveLength(1)
@@ -82,7 +82,7 @@ describe("AddTodo", () => {
 
       expect(result.title).toBe("Minimal Todo")
       expect(result.priority).toBe("low")
-      expect(result.status).toBe("pending")
+      expect(result.status).toBe("unstarted")
     })
 
     test("should handle high priority todos", async () => {

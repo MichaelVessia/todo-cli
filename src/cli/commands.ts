@@ -52,10 +52,13 @@ export const listCommand = Command.make("list", {}, () =>
   )
 )
 
+const STATUS_ARRAY = ["unstarted", "in_progress", "completed"] as const
+
 const updateId = Options.text("id").pipe(Options.optional)
 const updateTitle = Options.text("title").pipe(Options.withAlias("t"), Options.optional)
 const updateDescription = Options.text("description").pipe(Options.withAlias("d"), Options.optional)
 const updatePriority = Options.choice("priority", PRIORITY_ARRAY).pipe(Options.withAlias("p"), Options.optional)
+const updateStatus = Options.choice("status", STATUS_ARRAY).pipe(Options.withAlias("s"), Options.optional)
 const updateDueDate = Options.text("due-date").pipe(Options.optional)
 
 export const updateCommand = Command.make(
@@ -65,6 +68,7 @@ export const updateCommand = Command.make(
     title: updateTitle,
     description: updateDescription,
     priority: updatePriority,
+    status: updateStatus,
     dueDate: updateDueDate
   },
   (args) => {
@@ -74,6 +78,7 @@ export const updateCommand = Command.make(
         title: args.title._tag === "Some" ? args.title.value : undefined,
         description: args.description._tag === "Some" ? args.description.value : undefined,
         priority: args.priority._tag === "Some" ? args.priority.value : undefined,
+        status: args.status._tag === "Some" ? args.status.value : undefined,
         dueDate: args.dueDate._tag === "Some" ? args.dueDate.value : undefined
       }).pipe(
         Effect.provide(TodoRepositoryLayer),

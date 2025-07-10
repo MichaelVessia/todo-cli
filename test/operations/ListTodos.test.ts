@@ -41,11 +41,11 @@ describe("ListTodos", () => {
     })
 
     test("should return todos with different statuses", async () => {
-      const pendingTodo = makeTodo({ title: "Pending Todo" })
+      const unstartedTodo = makeTodo({ title: "Unstarted Todo" })
       const completedTodo = { ...makeTodo({ title: "Completed Todo" }), status: "completed" as const }
       const inProgressTodo = { ...makeTodo({ title: "In Progress Todo" }), status: "in_progress" as const }
 
-      mockRepository.setTodos([pendingTodo, completedTodo, inProgressTodo])
+      mockRepository.setTodos([unstartedTodo, completedTodo, inProgressTodo])
 
       const result = await Effect.runPromise(
         getTodos().pipe(Effect.provide(mockRepositoryLayer))
@@ -54,7 +54,7 @@ describe("ListTodos", () => {
       expect(result).toHaveLength(3)
 
       const statuses = result.map(todo => todo.status)
-      expect(statuses).toContain("pending")
+      expect(statuses).toContain("unstarted")
       expect(statuses).toContain("completed")
       expect(statuses).toContain("in_progress")
     })

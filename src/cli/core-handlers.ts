@@ -18,6 +18,7 @@ export interface UpdateTodoArgs {
   title?: string
   description?: string
   priority?: (typeof PRIORITY_ARRAY)[number]
+  status?: "unstarted" | "in_progress" | "completed"
   dueDate?: string
 }
 
@@ -73,6 +74,7 @@ export const updateTodoWithArgs = (args: UpdateTodoArgs) =>
     if (args.title !== undefined) changes.title = args.title
     if (args.description !== undefined) changes.description = args.description
     if (args.priority !== undefined) changes.priority = args.priority
+    if (args.status !== undefined) changes.status = args.status
     if (args.dueDate !== undefined) {
       const dueDate = new Date(args.dueDate)
       if (Number.isNaN(dueDate.getTime())) {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import { Effect } from "effect"
-import { Todo } from "../../../src/domain/todo/Todo.js"
+import { Todo, makeTodo } from "../../../src/domain/todo/Todo.js"
 import { TodoRepository } from "../../../src/domain/todo/TodoRepository.js"
 import { TodoRepositoryLayer } from "../../../src/infra/layers/TodoRepositoryLayer.js"
 import { SqliteTest } from "../../../src/infra/persistence/SqliteTodoRepository.js"
@@ -27,7 +27,7 @@ describe("TodoRepositoryLayer", () => {
       const repository = yield* TodoRepository
       
       // Save a todo
-      const todo = new Todo({ title: "Test todo", status: "pending", priority: "medium" })
+      const todo = makeTodo({ title: "Test todo", priority: "medium" })
       yield* repository.save(todo)
       
       // Find all todos
@@ -51,7 +51,7 @@ describe("TodoRepositoryLayer", () => {
   test("different test instances should have isolated data", async () => {
     const program1 = Effect.gen(function* () {
       const repository = yield* TodoRepository
-      const todo = new Todo({ title: "Todo in instance 1", status: "pending", priority: "high" })
+      const todo = makeTodo({ title: "Todo in instance 1", priority: "high" })
       yield* repository.save(todo)
       const count = yield* repository.count()
       yield* repository.deleteById(todo.id)
@@ -75,8 +75,8 @@ describe("TodoRepositoryLayer", () => {
       const repository = yield* TodoRepository
       
       // Add multiple todos
-      const todo1 = new Todo({ title: "Todo 1", status: "pending", priority: "low" })
-      const todo2 = new Todo({ title: "Todo 2", status: "in_progress", priority: "medium" })
+      const todo1 = makeTodo({ title: "Todo 1", priority: "low" })
+      const todo2 = new Todo({ ...makeTodo({ title: "Todo 2", priority: "medium" }), status: "in_progress" })
       yield* repository.save(todo1)
       yield* repository.save(todo2)
       

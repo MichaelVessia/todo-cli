@@ -13,7 +13,7 @@ import {
   isLowPriority,
   isMediumPriority,
   isOverdue,
-  isPending,
+  isUnstarted,
   makeTodo,
   start,
   toJSON,
@@ -32,7 +32,7 @@ describe("Todo", () => {
       })
 
       expect(todo.title).toBe("Test Todo")
-      expect(todo.status).toBe("pending")
+      expect(todo.status).toBe("unstarted")
       expect(todo.priority).toBe(DEFAULT_PRIORITY)
       expect(todo.createdAt).toBeInstanceOf(Date)
       expect(todo.updatedAt).toBeInstanceOf(Date)
@@ -123,13 +123,14 @@ describe("Todo", () => {
       expect(isCompleted(todo)).toBe(false)
     })
 
-    test("isPending should return true for pending todos", () => {
+    test("isUnstarted should return true for unstarted todos", () => {
       const todo = makeTodo({ title: "Test Todo" })
       const completedTodo = complete(todo)
 
-      expect(isPending(todo)).toBe(true)
-      expect(isPending(completedTodo)).toBe(false)
+      expect(isUnstarted(todo)).toBe(true)
+      expect(isUnstarted(completedTodo)).toBe(false)
     })
+
 
     test("isInProgress should return true for in-progress todos", () => {
       const todo = makeTodo({ title: "Test Todo" })
@@ -237,7 +238,7 @@ describe("Todo", () => {
         id: TodoId.toString(todo.id),
         title: "Test Todo",
         description: "Test description",
-        status: "pending",
+        status: "unstarted",
         priority: "high",
         createdAt: todo.createdAt.toISOString(),
         updatedAt: todo.updatedAt.toISOString(),
@@ -253,7 +254,7 @@ describe("Todo", () => {
         id: TodoId.toString(todo.id),
         title: "Test Todo",
         description: undefined,
-        status: "pending",
+        status: "unstarted",
         priority: DEFAULT_PRIORITY,
         createdAt: todo.createdAt.toISOString(),
         updatedAt: todo.updatedAt.toISOString(),

@@ -10,6 +10,12 @@ import {
   updateTodoWithArgs
 } from "./core-handlers.js"
 
+const STATUS_CHOICES = [
+  { title: "Unstarted", value: "unstarted" },
+  { title: "In Progress", value: "in_progress" },
+  { title: "Completed", value: "completed" }
+] as const
+
 export const promptForAddTodo = () =>
   Effect.gen(function* () {
     const title = yield* Prompt.text({
@@ -77,6 +83,7 @@ export const promptForUpdateTodo = () =>
         { title: "Title", value: "title" },
         { title: "Description", value: "description" },
         { title: "Priority", value: "priority" },
+        { title: "Status", value: "status" },
         { title: "Due Date", value: "dueDate" }
       ]
     })
@@ -106,6 +113,14 @@ export const promptForUpdateTodo = () =>
           choices: PRIORITY_CHOICES
         })
         args.priority = newPriority
+        break
+      }
+      case "status": {
+        const newStatus = yield* Prompt.select({
+          message: "Select status:",
+          choices: STATUS_CHOICES
+        })
+        args.status = newStatus
         break
       }
       case "dueDate": {
