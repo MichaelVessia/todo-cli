@@ -77,31 +77,31 @@ export const updateCommand = Command.make(
       onSome: (id) => {
         const updateArgs: any = { id }
         Option.match(args.title, {
-          onNone: () => { },
+          onNone: () => {},
           onSome: (title) => {
             updateArgs.title = title
           }
         })
         Option.match(args.description, {
-          onNone: () => { },
+          onNone: () => {},
           onSome: (description) => {
             updateArgs.description = description
           }
         })
         Option.match(args.priority, {
-          onNone: () => { },
+          onNone: () => {},
           onSome: (priority) => {
             updateArgs.priority = priority
           }
         })
         Option.match(args.status, {
-          onNone: () => { },
+          onNone: () => {},
           onSome: (status) => {
             updateArgs.status = status
           }
         })
         Option.match(args.dueDate, {
-          onNone: () => { },
+          onNone: () => {},
           onSome: (dueDate) => {
             updateArgs.dueDate = dueDate
           }
@@ -133,9 +133,9 @@ export const removeCommand = Command.make(
         ids.length > 0
           ? removeTodosWithArgs({ ids }).pipe(Effect.asVoid)
           : promptForRemoveTodos().pipe(
-            Effect.asVoid,
-            Effect.catchTag("QuitException", () => Effect.void)
-          )
+              Effect.asVoid,
+              Effect.catchTag("QuitException", () => Effect.void)
+            )
     })
 
     return action.pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
@@ -160,9 +160,9 @@ export const completeCommand = Command.make(
         ids.length > 0
           ? completeTodosWithArgs({ ids }).pipe(Effect.asVoid)
           : promptForCompleteTodos().pipe(
-            Effect.asVoid,
-            Effect.catchTag("QuitException", () => Effect.void)
-          )
+              Effect.asVoid,
+              Effect.catchTag("QuitException", () => Effect.void)
+            )
     })
 
     return action.pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))

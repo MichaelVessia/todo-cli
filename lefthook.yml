@@ -1,0 +1,5 @@
+pre-push:
+  commands:
+    check:
+      run: bun check
+      fail_text: "bun check failed. Please fix the issues before pushing."

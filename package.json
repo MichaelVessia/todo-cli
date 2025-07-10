@@ -33,7 +33,8 @@
     "@effect/platform-bun": "latest",
     "@types/node": "^22.5.2",
     "bun-types": "^1.2.18",
-    "effect": "latest"
+    "effect": "latest",
+    "lefthook": "^1.12.1"
   },
   "dependencies": {
     "@effect/schema": "^0.75.5",
