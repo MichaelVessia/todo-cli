@@ -64,10 +64,6 @@ You can customize the database location using an environment variable:
 export TODO_DB_PATH=/path/to/todos.db
 ```
 
-### Data Migration
-
-If you're upgrading from a previous version that used JSON or Markdown storage, you'll need to manually migrate your todos to the new SQLite database. **JSON and Markdown storage formats are no longer supported** - the application now exclusively uses SQLite for data persistence.
-
 ## Development
 
 ### Prerequisites
