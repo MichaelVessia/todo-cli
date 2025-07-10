@@ -1,5 +1,6 @@
 import { Console, Effect } from "effect"
 import type { PRIORITY_ARRAY } from "../domain/todo/PriorityConstants.js"
+import type { TodoStatus } from "../domain/todo/Todo.js"
 import { TodoId } from "../domain/todo/TodoId.js"
 import { type AddTodoCommand, addTodo } from "../operations/AddTodo.js"
 import { getTodos } from "../operations/ListTodos.js"
@@ -19,7 +20,7 @@ export interface UpdateTodoArgs {
   title?: string
   description?: string
   priority?: (typeof PRIORITY_ARRAY)[number]
-  status?: "unstarted" | "in_progress" | "completed"
+  status?: TodoStatus
   dueDate?: string
 }
 
