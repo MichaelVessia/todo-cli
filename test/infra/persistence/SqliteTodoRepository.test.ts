@@ -1,5 +1,5 @@
-import { afterAll, beforeAll, describe, expect, test } from "bun:test"
-import { Effect, Layer } from "effect"
+import { describe, expect, test } from "bun:test"
+import { Effect } from "effect"
 import { Todo, makeTodo } from "../../../src/domain/todo/Todo.js"
 import { TodoAlreadyExistsError, TodoNotFoundError } from "../../../src/domain/todo/TodoErrors.js"
 import { TodoId } from "../../../src/domain/todo/TodoId.js"
@@ -7,26 +7,6 @@ import { TodoRepository } from "../../../src/domain/todo/TodoRepository.js"
 import { SqliteTest } from "../../../src/infra/persistence/SqliteTodoRepository.js"
 
 describe("SqliteTodoRepository", () => {
-  let repository: TodoRepository
-
-  beforeAll(async () => {
-    const program = Effect.gen(function* () {
-      return yield* TodoRepository
-    }).pipe(Effect.provide(SqliteTest))
-
-    repository = await Effect.runPromise(program)
-  })
-
-  afterAll(async () => {
-    // Clean up any remaining todos
-    const program = Effect.gen(function* () {
-      const todos = yield* repository.findAll()
-      for (const todo of todos) {
-        yield* repository.deleteById(todo.id)
-      }
-    })
-    await Effect.runPromise(program)
-  })
 
   test("should save and retrieve a todo", async () => {
     const todo = makeTodo({
@@ -36,6 +16,7 @@ describe("SqliteTodoRepository", () => {
     })
 
     const program = Effect.gen(function* () {
+      const repository = yield* TodoRepository
       const saved = yield* repository.save(todo)
       expect(saved.title).toBe("Test Todo")
       
@@ -49,7 +30,7 @@ describe("SqliteTodoRepository", () => {
       yield* repository.deleteById(saved.id)
     })
 
-    await Effect.runPromise(program)
+    await Effect.runPromise(program.pipe(Effect.provide(SqliteTest)))
   })
 
   test("should list all todos", async () => {
@@ -57,6 +38,7 @@ describe("SqliteTodoRepository", () => {
     const todo2 = new Todo({ ...makeTodo({ title: "Todo 2", priority: "low" }), status: "in_progress" })
 
     const program = Effect.gen(function* () {
+      const repository = yield* TodoRepository
       yield* repository.save(todo1)
       yield* repository.save(todo2)
       
@@ -68,7 +50,7 @@ describe("SqliteTodoRepository", () => {
       yield* repository.deleteById(todo2.id)
     })
 
-    await Effect.runPromise(program)
+    await Effect.runPromise(program.pipe(Effect.provide(SqliteTest)))
   })
 
   test("should update a todo", async () => {
@@ -78,6 +60,7 @@ describe("SqliteTodoRepository", () => {
     })
 
     const program = Effect.gen(function* () {
+      const repository = yield* TodoRepository
       yield* repository.save(todo)
       
       const updated = new Todo({
@@ -96,7 +79,7 @@ describe("SqliteTodoRepository", () => {
       yield* repository.deleteById(todo.id)
     })
 
-    await Effect.runPromise(program)
+    await Effect.runPromise(program.pipe(Effect.provide(SqliteTest)))
   })
 
   test("should delete a todo", async () => {
@@ -106,6 +89,7 @@ describe("SqliteTodoRepository", () => {
     })
 
     const program = Effect.gen(function* () {
+      const repository = yield* TodoRepository
       yield* repository.save(todo)
       yield* repository.deleteById(todo.id)
       
@@ -116,7 +100,7 @@ describe("SqliteTodoRepository", () => {
       }
     })
 
-    await Effect.runPromise(program)
+    await Effect.runPromise(program.pipe(Effect.provide(SqliteTest)))
   })
 
   test("should not save duplicate todo", async () => {
@@ -126,6 +110,7 @@ describe("SqliteTodoRepository", () => {
     })
 
     const program = Effect.gen(function* () {
+      const repository = yield* TodoRepository
       yield* repository.save(todo)
       
       const result = yield* Effect.either(repository.save(todo))
@@ -138,7 +123,7 @@ describe("SqliteTodoRepository", () => {
       yield* repository.deleteById(todo.id)
     })
 
-    await Effect.runPromise(program)
+    await Effect.runPromise(program.pipe(Effect.provide(SqliteTest)))
   })
 
   test("should find todos by status", async () => {
@@ -147,6 +132,7 @@ describe("SqliteTodoRepository", () => {
     const completed = new Todo({ ...makeTodo({ title: "Completed", priority: "low" }), status: "completed" })
 
     const program = Effect.gen(function* () {
+      const repository = yield* TodoRepository
       yield* repository.save(unstarted)
       yield* repository.save(inProgress)
       yield* repository.save(completed)
@@ -165,7 +151,7 @@ describe("SqliteTodoRepository", () => {
       yield* repository.deleteById(completed.id)
     })
 
-    await Effect.runPromise(program)
+    await Effect.runPromise(program.pipe(Effect.provide(SqliteTest)))
   })
 
   test("should find todos by priority", async () => {
@@ -174,6 +160,7 @@ describe("SqliteTodoRepository", () => {
     const low = makeTodo({ title: "Low", priority: "low" })
 
     const program = Effect.gen(function* () {
+      const repository = yield* TodoRepository
       yield* repository.save(high)
       yield* repository.save(medium)
       yield* repository.save(low)
@@ -192,11 +179,12 @@ describe("SqliteTodoRepository", () => {
       yield* repository.deleteById(low.id)
     })
 
-    await Effect.runPromise(program)
+    await Effect.runPromise(program.pipe(Effect.provide(SqliteTest)))
   })
 
   test("should count todos", async () => {
     const program = Effect.gen(function* () {
+      const repository = yield* TodoRepository
       const initialCount = yield* repository.count()
       
       const todo1 = makeTodo({ title: "Count 1", priority: "medium" })
@@ -213,6 +201,6 @@ describe("SqliteTodoRepository", () => {
       yield* repository.deleteById(todo2.id)
     })
 
-    await Effect.runPromise(program)
+    await Effect.runPromise(program.pipe(Effect.provide(SqliteTest)))
   })
 })

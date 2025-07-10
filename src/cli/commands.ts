@@ -2,7 +2,6 @@ import * as Command from "@effect/cli/Command"
 import * as Options from "@effect/cli/Options"
 import { Console, Effect } from "effect"
 import { PRIORITY_ARRAY } from "../domain/todo/PriorityConstants.js"
-import { TodoRepositoryLayer } from "../infra/layers/TodoRepositoryLayer.js"
 import {
   addTodoWithArgs,
   completeTodosWithArgs,
@@ -32,24 +31,15 @@ export const addCommand = Command.make(
         description: args.description._tag === "Some" ? args.description.value : undefined,
         priority: args.priority._tag === "Some" ? args.priority.value : undefined,
         dueDate: args.dueDate._tag === "Some" ? args.dueDate.value : undefined
-      }).pipe(
-        Effect.provide(TodoRepositoryLayer),
-        Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-      )
+      }).pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
     } else {
-      return promptForAddTodo().pipe(
-        Effect.provide(TodoRepositoryLayer),
-        Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-      )
+      return promptForAddTodo().pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
     }
   }
 )
 
 export const listCommand = Command.make("list", {}, () =>
-  listTodosWithArgs().pipe(
-    Effect.provide(TodoRepositoryLayer),
-    Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-  )
+  listTodosWithArgs().pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
 )
 
 const STATUS_ARRAY = ["unstarted", "in_progress", "completed"] as const
@@ -80,15 +70,9 @@ export const updateCommand = Command.make(
         priority: args.priority._tag === "Some" ? args.priority.value : undefined,
         status: args.status._tag === "Some" ? args.status.value : undefined,
         dueDate: args.dueDate._tag === "Some" ? args.dueDate.value : undefined
-      }).pipe(
-        Effect.provide(TodoRepositoryLayer),
-        Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-      )
+      }).pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
     } else {
-      return promptForUpdateTodo().pipe(
-        Effect.provide(TodoRepositoryLayer),
-        Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-      )
+      return promptForUpdateTodo().pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
     }
   }
 )
@@ -104,15 +88,9 @@ export const removeCommand = Command.make(
     if (args.ids._tag === "Some" && args.ids.value.length > 0) {
       return removeTodosWithArgs({
         ids: args.ids.value
-      }).pipe(
-        Effect.provide(TodoRepositoryLayer),
-        Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-      )
+      }).pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
     } else {
-      return promptForRemoveTodos().pipe(
-        Effect.provide(TodoRepositoryLayer),
-        Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-      )
+      return promptForRemoveTodos().pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
     }
   }
 )
@@ -128,15 +106,9 @@ export const completeCommand = Command.make(
     if (args.ids._tag === "Some" && args.ids.value.length > 0) {
       return completeTodosWithArgs({
         ids: args.ids.value
-      }).pipe(
-        Effect.provide(TodoRepositoryLayer),
-        Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-      )
+      }).pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
     } else {
-      return promptForCompleteTodos().pipe(
-        Effect.provide(TodoRepositoryLayer),
-        Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-      )
+      return promptForCompleteTodos().pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
     }
   }
 )

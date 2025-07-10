@@ -1,7 +1,10 @@
 #!/usr/bin/env bun
 
 import { BunContext, BunRuntime } from "@effect/platform-bun"
-import { Effect } from "effect"
+import { Effect, Layer } from "effect"
 import { run } from "./cli/interactive.js"
+import { TodoRepositoryLayer } from "./infra/layers/TodoRepositoryLayer.js"
 
-run(process.argv).pipe(Effect.provide(BunContext.layer), BunRuntime.runMain({ disableErrorReporting: true }))
+const MainLayer = Layer.mergeAll(BunContext.layer, TodoRepositoryLayer)
+
+run(process.argv).pipe(Effect.provide(MainLayer), BunRuntime.runMain({ disableErrorReporting: true }))

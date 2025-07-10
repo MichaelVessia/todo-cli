@@ -1,7 +1,6 @@
 import * as Command from "@effect/cli/Command"
 import * as Prompt from "@effect/cli/Prompt"
 import { Console, Effect } from "effect"
-import { TodoRepositoryLayer } from "../infra/layers/TodoRepositoryLayer.js"
 import { addCommand, completeCommand, listCommand, removeCommand, updateCommand } from "./commands.js"
 import {
   promptForAddTodo,
@@ -45,10 +44,7 @@ const interactiveCommand = Command.make("todo", {}, () =>
         yield* promptForCompleteTodos()
         break
     }
-  }).pipe(
-    Effect.provide(TodoRepositoryLayer),
-    Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
-  )
+  }).pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
 )
 
 const command = interactiveCommand.pipe(
