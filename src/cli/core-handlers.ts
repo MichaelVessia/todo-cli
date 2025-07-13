@@ -63,9 +63,18 @@ export const listTodosWithArgs = () =>
       yield* Console.log("No todos found!")
       return []
     }
-    yield* Effect.forEach(todos, (todo) => {
-      const priorityEmoji = todo.priority === "high" ? "🔴 " : todo.priority === "medium" ? "🟡 " : "🟢 "
-      return Console.log(`${priorityEmoji}${todo.title}, ${todo.status}`)
+
+    // Sort todos: "unstarted" and "in_progress" first, then "completed"
+    const sortedTodos = [...todos].sort((a, b) => {
+      if (a.status === "completed" && b.status !== "completed") return 1
+      if (a.status !== "completed" && b.status === "completed") return -1
+      return 0
+    })
+
+    yield* Effect.forEach(sortedTodos, (todo) => {
+      const priorityEmoji = todo.priority === "high" ? "🔴" : todo.priority === "medium" ? "🟡" : "🟢"
+      const dueDateStr = todo.dueDate ? `, due: ${new Date(todo.dueDate).toISOString().split("T")[0]}` : ""
+      return Console.log(`${priorityEmoji} ${todo.title}, ${todo.status}${dueDateStr}`)
     })
     return todos
   })
