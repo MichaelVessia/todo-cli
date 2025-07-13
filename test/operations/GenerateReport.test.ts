@@ -1,19 +1,17 @@
-import { Layer, Effect } from "effect"
+import { Layer, Effect, TestContext, TestClock } from "effect"
 import { describe, expect, test } from "bun:test"
-import { generateReport, generateFilteredReport, type ReportFilters } from "../../src/operations/GenerateReport.js"
+import { generateReport, generateFilteredReport, type ReportFilters, type TodoStatistics } from "../../src/operations/GenerateReport.js"
 import { makeTodo, complete } from "../../src/domain/todo/Todo.js"
 import { TodoRepository } from "../../src/domain/todo/TodoRepository.js"
 import { SqliteTest } from "../../src/infra/persistence/SqliteTodoRepository.js"
 
-const testLayer = Layer.provide(SqliteTest, Layer.setConfigProvider(Layer.succeed({
-  logLevel: "none"
-})))
+const testLayer = Layer.merge(SqliteTest, TestContext.TestContext)
 
 describe("GenerateReport", () => {
   test("should generate report with empty todos", async () => {
     const stats = await Effect.runPromise(
-      generateReport().pipe(Effect.provide(testLayer))
-    )
+      generateReport().pipe(Effect.provide(testLayer)) as any
+    ) as TodoStatistics
 
     expect(stats.total).toBe(0)
     expect(stats.completionRate).toBe(0)
@@ -47,7 +45,7 @@ describe("GenerateReport", () => {
       return yield* generateReport()
     })
 
-    const stats = await Effect.runPromise(program.pipe(Effect.provide(testLayer)))
+    const stats = await Effect.runPromise(program.pipe(Effect.provide(testLayer)) as any) as TodoStatistics
 
     expect(stats.total).toBe(3)
     expect(stats.completionRate).toBe(33) // 1/3 * 100 rounded
@@ -80,7 +78,7 @@ describe("GenerateReport", () => {
       return yield* generateFilteredReport(filters)
     })
 
-    const stats = await Effect.runPromise(program.pipe(Effect.provide(testLayer)))
+    const stats = await Effect.runPromise(program.pipe(Effect.provide(testLayer)) as any) as TodoStatistics
 
     expect(stats.total).toBe(2)
     expect(stats.byStatus.unstarted).toBe(2)
@@ -104,7 +102,7 @@ describe("GenerateReport", () => {
       return yield* generateFilteredReport(filters)
     })
 
-    const stats = await Effect.runPromise(program.pipe(Effect.provide(testLayer)))
+    const stats = await Effect.runPromise(program.pipe(Effect.provide(testLayer)) as any) as TodoStatistics
 
     expect(stats.total).toBe(2)
     expect(stats.byPriority.high).toBe(2)
@@ -114,17 +112,21 @@ describe("GenerateReport", () => {
 
   test("should detect overdue todos", async () => {
     const program = Effect.gen(function* () {
+      // Set a fixed time for deterministic testing
+      const fixedTime = 1000000000 // Fixed timestamp
+      yield* TestClock.setTime(fixedTime)
+      
       const repository = yield* TodoRepository
 
       // Create overdue todo (due yesterday)
-      const yesterday = Date.now() - (24 * 60 * 60 * 1000)
+      const yesterday = fixedTime - (24 * 60 * 60 * 1000)
       const overdueTodo = yield* makeTodo({ 
         title: "Overdue Todo", 
         dueDate: yesterday 
       })
       
       // Create future due todo
-      const tomorrow = Date.now() + (24 * 60 * 60 * 1000)
+      const tomorrow = fixedTime + (24 * 60 * 60 * 1000)
       const futureTodo = yield* makeTodo({ 
         title: "Future Todo", 
         dueDate: tomorrow 
@@ -136,7 +138,7 @@ describe("GenerateReport", () => {
       return yield* generateReport()
     })
 
-    const stats = await Effect.runPromise(program.pipe(Effect.provide(testLayer)))
+    const stats = await Effect.runPromise(program.pipe(Effect.provide(testLayer)) as any) as TodoStatistics
 
     expect(stats.total).toBe(2)
     expect(stats.overdue).toBe(1)
@@ -144,17 +146,21 @@ describe("GenerateReport", () => {
 
   test("should count todos due this week", async () => {
     const program = Effect.gen(function* () {
+      // Set a fixed time for deterministic testing
+      const fixedTime = 1000000000 // Fixed timestamp
+      yield* TestClock.setTime(fixedTime)
+      
       const repository = yield* TodoRepository
 
       // Create todo due in 3 days
-      const inThreeDays = Date.now() + (3 * 24 * 60 * 60 * 1000)
+      const inThreeDays = fixedTime + (3 * 24 * 60 * 60 * 1000)
       const dueThisWeekTodo = yield* makeTodo({ 
         title: "Due This Week", 
         dueDate: inThreeDays 
       })
       
       // Create todo due in 10 days (not this week)
-      const inTenDays = Date.now() + (10 * 24 * 60 * 60 * 1000)
+      const inTenDays = fixedTime + (10 * 24 * 60 * 60 * 1000)
       const dueNextWeekTodo = yield* makeTodo({ 
         title: "Due Next Week", 
         dueDate: inTenDays 
@@ -166,7 +172,7 @@ describe("GenerateReport", () => {
       return yield* generateReport()
     })
 
-    const stats = await Effect.runPromise(program.pipe(Effect.provide(testLayer)))
+    const stats = await Effect.runPromise(program.pipe(Effect.provide(testLayer)) as any) as TodoStatistics
 
     expect(stats.total).toBe(2)
     expect(stats.dueThisWeek).toBe(1)
@@ -182,8 +188,8 @@ describe("GenerateReport", () => {
         yield* repository.save(todo)
 
         return yield* generateReport()
-      }).pipe(Effect.provide(testLayer))
-    )
+      }).pipe(Effect.provide(testLayer)) as any
+    ) as TodoStatistics
 
     expect(stats.total).toBe(1)
     expect(stats.createdThisWeek).toBe(1)

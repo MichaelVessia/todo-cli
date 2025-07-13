@@ -1,4 +1,5 @@
-import { Effect } from "effect"
+import { Clock, Effect } from "effect"
+import type * as Types from "effect/Clock"
 import { isCompleted, type Todo } from "../domain/todo/Todo.js"
 import type { TodoRepositoryError } from "../domain/todo/TodoErrors.js"
 import { TodoRepository } from "../domain/todo/TodoRepository.js"
@@ -22,11 +23,11 @@ export interface TodoStatistics {
   createdThisMonth: number
 }
 
-export const generateReport = (): Effect.Effect<TodoStatistics, TodoRepositoryError, TodoRepository> =>
+export const generateReport = (): Effect.Effect<TodoStatistics, TodoRepositoryError, TodoRepository | Types.Clock> =>
   Effect.gen(function* () {
     const repository = yield* TodoRepository
     const todos = yield* repository.findAll()
-    const now = yield* Effect.sync(() => Date.now())
+    const now = yield* Clock.currentTimeMillis
 
     // Calculate date boundaries
     const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000
@@ -121,7 +122,7 @@ export interface ReportFilters {
 
 export const generateFilteredReport = (
   filters: ReportFilters
-): Effect.Effect<TodoStatistics, TodoRepositoryError, TodoRepository> =>
+): Effect.Effect<TodoStatistics, TodoRepositoryError, TodoRepository | Types.Clock> =>
   Effect.gen(function* () {
     const repository = yield* TodoRepository
     let todos = yield* repository.findAll()
@@ -147,7 +148,7 @@ export const generateFilteredReport = (
     }
 
     // Generate report for filtered todos
-    const now = yield* Effect.sync(() => Date.now())
+    const now = yield* Clock.currentTimeMillis
     const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000
     const oneWeekFromNow = now + 7 * 24 * 60 * 60 * 1000
     const oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000
