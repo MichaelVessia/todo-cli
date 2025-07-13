@@ -20,8 +20,7 @@
     "format": "biome format --write src",
     "test": "bun test --typecheck",
     "coverage": "bun test --coverage",
-    "changeset-version": "changeset version && bun run format",
-    "release": "changeset publish"
+    "changeset-version": "changeset version && bun run format"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.1",
