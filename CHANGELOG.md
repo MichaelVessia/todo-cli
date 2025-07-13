@@ -1,5 +1,11 @@
 # todo-cli
 
+## 0.0.8
+
+### Patch Changes
+
+- [`289aced`](https://github.com/MichaelVessia/todo-cli/commit/289aced79ac9bbe2dd72ab75863bc92237918be8) Thanks @MichaelVessia! - try a new changeset
+
 ## 0.0.7
 
 ### Patch Changes
