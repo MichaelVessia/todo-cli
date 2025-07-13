@@ -1,5 +1,11 @@
 # todo-cli
 
+## 0.0.6
+
+### Patch Changes
+
+- [`bbdbfb7`](https://github.com/MichaelVessia/todo-cli/commit/bbdbfb7eb7a2ab729a7ee461c8a69a550ba6aae3) Thanks @MichaelVessia! - trying again
+
 ## 0.0.5
 
 ### Patch Changes
