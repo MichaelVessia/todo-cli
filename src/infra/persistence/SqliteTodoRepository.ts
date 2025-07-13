@@ -35,9 +35,9 @@ class SqliteTodoRepository implements TodoRepository {
       description: row.description || undefined,
       status: row.status as Todo["status"],
       priority: row.priority as Todo["priority"],
-      createdAt: row.created_at as number,
-      updatedAt: row.updated_at as number,
-      ...(row.due_date ? { dueDate: row.due_date as number } : {})
+      createdAt: Number(row.created_at),
+      updatedAt: Number(row.updated_at),
+      ...(row.due_date ? { dueDate: Number(row.due_date) } : {})
     })
 
   readonly findById = (id: TodoId): Effect.Effect<Todo, TodoNotFoundError | TodoRepositoryError, never> =>
