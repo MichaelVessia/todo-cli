@@ -1,5 +1,11 @@
 # todo-cli
 
+## 0.0.10
+
+### Patch Changes
+
+- [`a1013b1`](https://github.com/MichaelVessia/todo-cli/commit/a1013b1f80243af060c7b6f1ed9e2a1e319817ae) Thanks @MichaelVessia! - try again
+
 ## 0.0.9
 
 ### Patch Changes
