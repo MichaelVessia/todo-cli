@@ -38,7 +38,7 @@ jobs:
 
       - name: Create single file executable
         if: steps.changesets.outputs.hasChangesets == 'true'
-        run: bun build --compile --outfile=todo-cli ./src/bin.ts
+        run: bun run build && cp dist/bin.js todo-cli
 
       - name: Get published version
         if: steps.changesets.outputs.hasChangesets == 'true'
