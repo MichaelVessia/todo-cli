@@ -1,9 +1,6 @@
-name: Release
+name: Manual Release (Legacy)
 
 on:
-  push:
-    branches:
-      - master
   workflow_dispatch:
 
 permissions:

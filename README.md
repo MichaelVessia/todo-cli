@@ -126,18 +126,24 @@ This project uses [Changesets](https://github.com/changesets/changesets) for aut
 
 #### How it works:
 
-1. **Manual process**: Developers need to run `changeset add` to create changeset files
-2. **Version updates**: Run `changeset version` to update CHANGELOG.md and bump versions
-3. **No automation**: GitHub Actions don't automatically generate changelogs on push
+1. **Automated process**: GitHub Actions automatically handle version updates and releases
+2. **Developer workflow**: Contributors add changeset files describing their changes
+3. **Release automation**: When changesets are merged to master, GitHub creates release PRs automatically
 
 #### To contribute with changelog updates:
 
 1. Make your changes
 2. Run `changeset add` to create a changeset describing your changes
 3. Commit both your changes and the changeset file
-4. The changelog will be updated when maintainers run `changeset version`
+4. When merged to master, GitHub Actions will:
+   - Create a "Version Packages" pull request with version bumps and changelog updates
+   - When that PR is merged, automatically create a GitHub release with compiled executable
 
-The changelog won't update automatically just from pushing code changes without corresponding changeset files.
+#### Automated Release Process:
+
+- **Release PRs**: Automatically created when changesets are detected on master
+- **GitHub Releases**: Automatically created when version PRs are merged
+- **Executables**: Compiled binaries attached to each GitHub release
 
 ### Development Scripts
 

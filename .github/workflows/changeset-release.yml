@@ -1,0 +1,63 @@
+name: Changeset Release
+
+on:
+  push:
+    branches:
+      - master
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        uses: ./.github/actions/setup
+
+      - name: Create Release Pull Request or Publish to GitHub
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: bun run changeset-version
+          publish: bun run changeset-publish
+          commit: "chore: release packages"
+          title: "chore: release packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create single file executable
+        if: steps.changesets.outputs.published == 'true'
+        run: bun build --compile --outfile=todo-cli ./src/bin.ts
+
+      - name: Get published version
+        if: steps.changesets.outputs.published == 'true'
+        id: package-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub release with executable
+        if: steps.changesets.outputs.published == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            todo-cli
+          tag_name: v${{ steps.package-version.outputs.version }}
+          name: v${{ steps.package-version.outputs.version }}
+          body: |
+            Release v${{ steps.package-version.outputs.version }}
+            
+            Download the `todo-cli` executable from the assets below.
+            
+            See [CHANGELOG.md](https://github.com/MichaelVessia/todo-cli/blob/master/CHANGELOG.md) for detailed changes.
+          draft: false
+          prerelease: false
