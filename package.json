@@ -1,11 +1,7 @@
 {
   "name": "@michaelvessia/todo-cli",
-<<<<<<< HEAD
-  "version": "0.0.5",
-  "private": true,
-=======
   "version": "0.0.6",
->>>>>>> c4ca111154713783d215f19be6ae3d1983e6ded7
+  "private": true,
   "type": "module",
   "license": "MIT",
   "description": "A basic Effect CLI application",
