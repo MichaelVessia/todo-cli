@@ -22,6 +22,7 @@
     "coverage": "bun test --coverage",
     "changeset-version": "changeset version && bun run format",
     "changeset-publish": "bun run build && bun test",
+    "publish": "changeset publish",
     "release": "changeset publish"
   },
   "devDependencies": {
