@@ -1,5 +1,11 @@
 # todo-cli
 
+## 0.0.5
+
+### Patch Changes
+
+- [`efe9f4c`](https://github.com/MichaelVessia/todo-cli/commit/efe9f4ceb9292c4e9fc44642fb4abbf45a5b781a) Thanks @MichaelVessia! - trying auto publish again
+
 ## 0.0.4
 
 ### Patch Changes
