@@ -1,5 +1,11 @@
 # todo-cli
 
+## 0.0.4
+
+### Patch Changes
+
+- [`cf8ecb6`](https://github.com/MichaelVessia/todo-cli/commit/cf8ecb6721cdf0b76a0dc4efe71df934adcd99fe) Thanks @MichaelVessia! - switch to sqlite, add changset automation
+
 ## 0.0.2
 
 ### Patch Changes
