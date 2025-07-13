@@ -1,5 +1,11 @@
 # todo-cli
 
+## 0.0.9
+
+### Patch Changes
+
+- [`fe8cd65`](https://github.com/MichaelVessia/todo-cli/commit/fe8cd655277346dfc4085890a44150c78ad56d23) Thanks @MichaelVessia! - try shrinking executable
+
 ## 0.0.8
 
 ### Patch Changes
