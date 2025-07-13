@@ -36,10 +36,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build package
-        if: steps.changesets.outputs.published == 'true'
-        run: bun run build
-
       - name: Create single file executable
         if: steps.changesets.outputs.published == 'true'
         run: bun build --compile --outfile=todo-cli ./src/bin.ts
