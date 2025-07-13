@@ -41,7 +41,4 @@ Note: All commands also support interactive mode when arguments are omitted.
 ## Scripts
 - `bun check` - Run linting, formatting, and tests
 - `bun run lint` - Check code with Biome
-- `bun run lint-fix` - Fix issues with Biome
-- `bun run format` - Format code with Biome
-- `bun test` - Run tests
 - `bun run build` - Build the project
