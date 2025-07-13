@@ -5,6 +5,7 @@ import { PRIORITY_ARRAY } from "../domain/todo/PriorityConstants.js"
 import {
   addTodoWithArgs,
   completeTodosWithArgs,
+  generateReportWithArgs,
   listTodosWithArgs,
   removeTodosWithArgs,
   updateTodoWithArgs
@@ -166,5 +167,73 @@ export const completeCommand = Command.make(
     })
 
     return action.pipe(Effect.catchAll((error) => Console.log(`Error: ${error.message}`)))
+  }
+)
+
+const reportFormat = Options.choice("format", ["simple", "detailed", "json"] as const).pipe(
+  Options.withAlias("f"),
+  Options.optional
+)
+const reportStatus = Options.choice("status", STATUS_ARRAY).pipe(Options.optional)
+const reportPriority = Options.choice("priority", PRIORITY_ARRAY).pipe(Options.optional)
+const reportFromDate = Options.text("from").pipe(Options.optional)
+const reportToDate = Options.text("to").pipe(Options.optional)
+
+export const reportCommand = Command.make(
+  "report",
+  {
+    format: reportFormat,
+    status: reportStatus,
+    priority: reportPriority,
+    from: reportFromDate,
+    to: reportToDate
+  },
+  (args) => {
+    const reportArgs: any = {}
+
+    Option.match(args.format, {
+      onNone: () => {},
+      onSome: (format) => {
+        reportArgs.format = format
+      }
+    })
+
+    Option.match(args.status, {
+      onNone: () => {},
+      onSome: (status) => {
+        reportArgs.status = status
+      }
+    })
+
+    Option.match(args.priority, {
+      onNone: () => {},
+      onSome: (priority) => {
+        reportArgs.priority = priority
+      }
+    })
+
+    const dateRange: any = {}
+    Option.match(args.from, {
+      onNone: () => {},
+      onSome: (from) => {
+        dateRange.from = from
+      }
+    })
+
+    Option.match(args.to, {
+      onNone: () => {},
+      onSome: (to) => {
+        dateRange.to = to
+      }
+    })
+
+    if (Object.keys(dateRange).length > 0) {
+      reportArgs.dateRange = dateRange
+    }
+
+    return generateReportWithArgs(reportArgs).pipe(
+      Effect.asVoid,
+      Effect.catchAll((error) => Console.log(`Error: ${error.message}`))
+    )
   }
 )
