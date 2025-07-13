@@ -32,42 +32,21 @@ jobs:
           version: bun run changeset-version
           commit: "chore: release packages"
           title: "chore: release packages"
-          createGithubReleases: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check if version was updated
-        id: version-updated
-        run: |
-          if [[ "${{ steps.changesets.outputs.hasChangesets }}" == "false" && "${{ steps.changesets.outputs.pullRequestNumber }}" == "" ]]; then
-            echo "updated=true" >> $GITHUB_OUTPUT
-          else
-            echo "updated=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Get current version
-        if: steps.version-updated.outputs.updated == 'true'
-        id: package-version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-
-      - name: Check if release exists
-        if: steps.version-updated.outputs.updated == 'true'
-        id: release-exists
-        run: |
-          if gh release view "v${{ steps.package-version.outputs.version }}" >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
+          createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create single file executable
-        if: steps.version-updated.outputs.updated == 'true' && steps.release-exists.outputs.exists == 'false'
+        if: steps.changesets.outputs.published == 'true'
         run: bun build --compile --outfile=todo-cli ./src/bin.ts
 
-      - name: Create GitHub release with executable
-        if: steps.version-updated.outputs.updated == 'true' && steps.release-exists.outputs.exists == 'false'
+      - name: Get published version
+        if: steps.changesets.outputs.published == 'true'
+        id: package-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Update GitHub release with executable
+        if: steps.changesets.outputs.published == 'true'
         uses: softprops/action-gh-release@v1
         with:
           files: |
