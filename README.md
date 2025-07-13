@@ -155,7 +155,3 @@ bun changeset-publish  # Build and test for publishing
 ## License
 
 MIT
-
-## Repository
-
-[https://github.com/MichaelVessia/todo-cli](https://github.com/MichaelVessia/todo-cli)
