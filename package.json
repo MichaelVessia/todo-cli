@@ -13,7 +13,7 @@
     "todo-cli": "./dist/bin.js"
   },
   "scripts": {
-    "build": "bun build ./src/bin.ts --outdir=./dist --target=bun && cp package.json README.md LICENSE dist/ && sed -i 's|\"./dist/bin.js\"|\"./bin.js\"|' dist/package.json",
+    "build": "bun build ./src/bin.ts --outdir=./dist --target=bun --external=effect --external=@effect/platform --external=@effect/platform-bun --external=@effect/cli --external=@effect/schema --external=@effect/sql --external=@effect/sql-sqlite-bun && cp package.json README.md LICENSE dist/ && sed -i 's|\"./dist/bin.js\"|\"./bin.js\"|' dist/package.json",
     "clean": "rm -rf dist/*",
     "check": "bun lint:fix src && bun format src && bun x tsc --noEmit && bun test",
     "lint": "biome check src",
